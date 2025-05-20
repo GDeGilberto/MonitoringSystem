@@ -33,7 +33,7 @@ namespace MonitoringSystem.Infrastructure.SerialComm
                 Console.WriteLine("Conexion cerrada");
             }
         }
-        public string ReadLine()
+        public string Read()
         {
             Thread.Sleep(5000);
             if (_serialPort.BytesToRead > 0)
@@ -41,7 +41,7 @@ namespace MonitoringSystem.Infrastructure.SerialComm
             else
                 return "No se recibio respuesta.";
         }
-        public void WriteLine(string message)
+        public void Write(string message)
         {
             _serialPort.WriteLine($"\x01{message}");
         }
