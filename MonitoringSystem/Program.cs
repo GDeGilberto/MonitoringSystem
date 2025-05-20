@@ -10,8 +10,8 @@ while (true)
     
     if (command.ToLower() == "exit") break;
 
-    serialComm.WriteLine(command);
-    string response = serialComm.ReadLine();
+    serialComm.Write(command);
+    string response = serialComm.Read();
     Console.WriteLine(response);
 }
 
