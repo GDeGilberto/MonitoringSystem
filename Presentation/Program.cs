@@ -20,9 +20,23 @@ services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(configuration.GetConnectionString("DefaultConnection")));
 
 // Configuración del servicio serial
+services.AddSingleton<ISerialCommunication>(_ =>
+    new SerialCommunication(
+        portName: configuration["SerialPort:PortName"] ?? "COM1",
+        baudRate: int.Parse(configuration["SerialPort:BaudRate"] ?? "9600")));
+
+services.AddScoped<SerialService>();
 
 var provider = services.BuildServiceProvider();
 
 // Ejecución
-var serialService = provider.GetRequiredService<SerialService>();
-await serialService.RunAsync();
+try
+{
+    var serialService = provider.GetRequiredService<SerialService>();
+    serialService.Run();
+}
+catch (Exception ex)
+{
+    Console.WriteLine($"Error crítico: {ex.Message}");
+    Thread.Sleep(5000);
+}

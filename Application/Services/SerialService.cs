@@ -11,7 +11,7 @@ namespace Application.Services
             _serialComm = serialComm;
         }
 
-        public async Task RunAsync()
+        public void Run()
         {
             _serialComm.Open();
 
