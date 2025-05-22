@@ -19,6 +19,7 @@ namespace Infrastructure.Communication
                 WriteTimeout = 500
             };
         }
+
         public void Open()
         {
             if (!_serialPort.IsOpen)
@@ -27,22 +28,24 @@ namespace Infrastructure.Communication
                 Console.WriteLine($"Conexion establecida con {_serialPort.PortName}");
             }
         }
+
         public void Close()
         {
             if (_serialPort.IsOpen)
             {
                 _serialPort.Close();
                 Console.WriteLine("Conexion cerrada");
-            }
+        }
         }
         public string Read()
         {
             Thread.Sleep(5000);
             if (_serialPort.BytesToRead > 0)
-                return $"Respuesta recibida: {_serialPort.ReadExisting()}";
+                return _serialPort.ReadExisting();
             else
                 return "No se recibio respuesta.";
         }
+
         public void Write(string message)
         {
             _serialPort.WriteLine($"\x01{message}");
