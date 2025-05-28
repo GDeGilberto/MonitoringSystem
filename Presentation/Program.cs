@@ -1,4 +1,5 @@
-﻿using Domain.Interfaces;
+﻿using Application.UseCases;
+using Domain.Interfaces;
 using Infrastructure.Communication;
 using Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
@@ -23,6 +24,9 @@ services.AddDbContext<AppDbContext>(options =>
 services.AddSingleton<ISerialPortService>(provider =>
     new SerialPortService());
 services.AddSingleton<ISerialPortService, SerialPortService>();
+
+services.AddScoped<ParceDeliveryReport>();
+services.AddScoped<ParseTankInventoryReport>();
 services.AddScoped<TerminalConsole>();
 
 var provider = services.BuildServiceProvider();
