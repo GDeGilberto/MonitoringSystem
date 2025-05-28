@@ -1,10 +1,10 @@
-﻿using Application.Services;
-using Domain.Interfaces;
+﻿using Domain.Interfaces;
 using Infrastructure.Communication;
 using Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Presentation;
 
 // Configuración
 var configuration = new ConfigurationBuilder()
@@ -20,20 +20,18 @@ services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(configuration.GetConnectionString("DefaultConnection")));
 
 // Configuración del servicio serial
-services.AddSingleton<ISerialCommunication>(_ =>
-    new SerialCommunication(
-        portName: configuration["SerialPort:PortName"] ?? "COM1",
-        baudRate: int.Parse(configuration["SerialPort:BaudRate"] ?? "9600")));
-
-services.AddScoped<SerialService>();
+services.AddSingleton<ISerialPortService>(provider =>
+    new SerialPortService());
+services.AddSingleton<ISerialPortService, SerialPortService>();
+services.AddScoped<TerminalConsole>();
 
 var provider = services.BuildServiceProvider();
 
 // Ejecución
 try
 {
-    var serialService = provider.GetRequiredService<SerialService>();
-    serialService.Run();
+    var terminal = provider.GetRequiredService<TerminalConsole>();
+    terminal.Run();
 }
 catch (Exception ex)
 {
