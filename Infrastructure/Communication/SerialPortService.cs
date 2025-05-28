@@ -126,7 +126,6 @@ namespace Infrastructure.Communication
                     }
 
                     string framedData = $"\x01{data}"; // Añade SOH
-                    Console.WriteLine($"Enviando comando: {framedData}");
                     _serialPort.Write(framedData);
                     Console.WriteLine("Comando enviado exitosamente");
                 }

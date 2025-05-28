@@ -1,4 +1,5 @@
-﻿using Domain.Interfaces;
+﻿using Application.UseCases;
+using Domain.Interfaces;
 using System.Diagnostics;
 using System.IO.Ports;
 
@@ -9,50 +10,171 @@ namespace Presentation
         private readonly ISerialPortService _serialPortService;
         private bool _isReceivingData = false;
         private readonly object _consoleLock = new();
-        private DateTime _lastDataReceivedTime = DateTime.MinValue;
         private readonly Stopwatch _responseStopwatch = new();
         private static string _lastSuccessfulPort = "COM3";
         private static int _lastSuccessfulBaudRate = 2400;
+        public  ParceDeliveryReport _parceDeliveryReport;
+        public  ParseTankInventoryReport _parseTankInventoryReport;
+        private EventHandler<string> _currentResponseHandler;
 
-        public TerminalConsole(ISerialPortService serialPortService)
+        public TerminalConsole(
+            ISerialPortService serialPortService, 
+            ParceDeliveryReport parceDeliveryReport,
+            ParseTankInventoryReport parseTankInventoryReport)
         {
             _serialPortService = serialPortService;
-            InitializeSerialPort();
+            _parceDeliveryReport = parceDeliveryReport;
+            _parseTankInventoryReport = parseTankInventoryReport;
+        }
+
+
+        public void ShowHeaderConnectionEstablished()
+        {
+            Console.WriteLine("\nTerminal de Comunicación Serial - Modo Interactivo");
+            Console.WriteLine("------------------------------------------------");
+            Console.WriteLine("Escribe 'help' para ver los comandos disponibles");
+            Console.WriteLine("Escribe 'exit' para salir\n");
+
+            ShowPrompt();
+        }
+
+        private void ProcessInputCommand(string input)
+        {
+            lock (_consoleLock)
+            {
+                switch (input.ToLower())
+                {
+                    case "help":
+                        ShowHelp();
+                        break;
+                    case "clear":
+                        Console.Clear();
+                        ShowHeaderConnectionEstablished();
+                        break;
+                    default:
+                        SendCommand(input);
+                        break;
+                }
+            }
+        }
+
+        private void SendCommand(string command)
+        {
+            Console.ForegroundColor = ConsoleColor.Cyan;
+            Console.WriteLine($"\nEnviando comando: {command}");
+            Console.ResetColor();
+
+            _serialPortService.Write(command);
+
+            // Aquí podrías agregar lógica para manejar diferentes tipos de comandos
+            ActionCommand(command);
+        }
+
+        private void ActionCommand(string command)
+        {
+            string commandPrefix = command[..4].ToLower();
+            // Remover el manejador previo si existe
+            if (_currentResponseHandler != null)
+            {
+                _serialPortService.CompleteResponseReceived -= _currentResponseHandler;
+            }
+
+            switch (commandPrefix)
+            {
+                case "i201":
+                    _currentResponseHandler = (sender, response) =>
+                    {
+                        var result = _parseTankInventoryReport.Execute(response);
+                        // Remover el manejador después de usarlo
+                        _serialPortService.CompleteResponseReceived -= _currentResponseHandler;
+                        _currentResponseHandler = null;
+                    };
+                    _serialPortService.CompleteResponseReceived += _currentResponseHandler;
+                    break;
+
+                case "i202":
+                    _currentResponseHandler = (sender, response) =>
+                    {
+                        var result = _parceDeliveryReport.Execute(response);
+                        // Remover el manejador después de usarlo
+                        _serialPortService.CompleteResponseReceived -= _currentResponseHandler;
+                        _currentResponseHandler = null;
+                    };
+                    _serialPortService.CompleteResponseReceived += _currentResponseHandler;
+                    break;
+            }
         }
 
         public void Run()
         {
             try
             {
-                Console.WriteLine("\nTerminal de Comunicación Serial - Modo Interactivo");
-                Console.WriteLine("------------------------------------------------");
-                Console.WriteLine("Los datos recibidos se muestran en tiempo real");
-                Console.WriteLine("Escribe 'exit' para salir\n");
+                bool connectionSuccess = AttemptInitialConnection();
 
-                ShowPrompt();
-
-                while (true)
+                if (!connectionSuccess)
                 {
-                    var input = Console.ReadLine();
-                    if (input?.ToLower() == "exit") break;
-
-                    if (!string.IsNullOrWhiteSpace(input))
-                    {
-                        lock (_consoleLock)
-                        {
-                            Console.ForegroundColor = ConsoleColor.Cyan;
-                            Console.WriteLine($"\nEnviando: {input}");
-                            Console.ResetColor();
-                            _serialPortService.Write(input);
-                        }
-                    }
+                    InitializeSerialPort();
                 }
+
+                ShowHeaderConnectionEstablished();
+                ProcessCommands();
+            }
+            catch (Exception ex)
+            {
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine($"\nError crítico: {ex.Message}");
+                Console.ResetColor();
             }
             finally
             {
                 _serialPortService.Close();
                 Console.WriteLine("\nAplicación terminada");
             }
+        }
+
+        private bool AttemptInitialConnection()
+        {
+            try
+            {
+                Console.WriteLine($"\nIntentando conexión con {_lastSuccessfulPort} @ {_lastSuccessfulBaudRate} baud...");
+                _serialPortService.Initialize(_lastSuccessfulPort, _lastSuccessfulBaudRate);
+                _serialPortService.DataReceived += OnDataReceived;
+                _serialPortService.CompleteResponseReceived += OnCompleteResponseReceived;
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine($"\nError al conectar: {ex.Message}");
+                Console.ResetColor();
+                return false;
+            }
+        }
+
+        private void ProcessCommands()
+        {
+            while (true)
+            {
+                var input = Console.ReadLine()?.Trim();
+
+                if (string.IsNullOrWhiteSpace(input))
+                    continue;
+
+                if (input.Equals("exit", StringComparison.OrdinalIgnoreCase))
+                    break;
+
+                ProcessInputCommand(input);
+            }
+        }
+
+        private static void ShowHelp()
+        {
+            Console.WriteLine("\nCOMANDOS DISPONIBLES:");
+            Console.WriteLine("---------------------");
+            Console.WriteLine("I201XX - Muestra inventario de los tanques (ej. 00 - todos, 0X - tanque X)");
+            Console.WriteLine("I202XX - Muestra los últimos 10 cargas a los tanques (ej. 00 - todos, 0X - tanque X)");
+            Console.WriteLine("clean - Limpia la consola");
+            Console.WriteLine("exit - Salir del programa\n");
         }
 
         private void InitializeSerialPort()
@@ -148,10 +270,9 @@ namespace Presentation
         private static int SelectBaudRate()
         {
             Console.Write("\nIngrese el baud rate (ej. 9600): ");
+
             if (!int.TryParse(Console.ReadLine(), out int baudRate) || baudRate <= 0)
-            {
                 throw new ArgumentException("Baud rate debe ser un número positivo.");
-            }
 
             return baudRate;
         }
@@ -159,10 +280,9 @@ namespace Presentation
         private static (string port, int baudRate) TryAutoDetectPort()
         {
             string[] availablePorts = SerialPort.GetPortNames();
+
             if (availablePorts.Length == 0)
-            {
                 throw new Exception("No se detectaron puertos COM disponibles");
-            }
 
             Console.WriteLine("\nProbando puertos disponibles...");
 
@@ -172,11 +292,7 @@ namespace Presentation
 
                 try
                 {
-                    using var testPort = new SerialPort(port, _lastSuccessfulBaudRate)
-                    {
-                        ReadTimeout = 500,
-                        WriteTimeout = 500
-                    };
+                    using var testPort = new SerialPort(port, _lastSuccessfulBaudRate);
 
                     testPort.Open();
                     testPort.Close();
@@ -232,7 +348,6 @@ namespace Presentation
                     _responseStopwatch.Start(); // Inicia el cronómetro al primer dato recibido
 
                 _isReceivingData = true;
-                _lastDataReceivedTime = DateTime.Now;
 
                 Console.ForegroundColor = ConsoleColor.Green;
                 Console.Write(data); // Muestra datos en tiempo real
@@ -253,7 +368,7 @@ namespace Presentation
 
                 Console.WriteLine($"[Tamaño: {completeResponse.Length} caracteres]");
                 Console.ResetColor();
-
+                
                 _responseStopwatch.Reset();
                 ShowPrompt();
             }

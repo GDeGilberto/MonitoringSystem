@@ -4,7 +4,7 @@ namespace Application.UseCases
 {
     public class ParseTankInventoryReport
     {
-        public static TankReport Execute(string input)
+        public TankReport Execute(string input)
         {
             if (string.IsNullOrEmpty(input)) throw new ArgumentException("El string no puede ser nulo o vacío.");
 
