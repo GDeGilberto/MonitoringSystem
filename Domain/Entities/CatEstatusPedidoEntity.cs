@@ -1,6 +1,6 @@
 ﻿namespace Domain.Entities;
 
-public partial class CatEstatusPedido
+public partial class CatEstatusPedidoEntity
 {
     public int IdEstatus { get; set; }
 

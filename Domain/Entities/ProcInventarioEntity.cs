@@ -1,12 +1,12 @@
 ﻿namespace Domain.Entities;
 
-public partial class ProcInventarioPenasco
+public partial class ProcInventarioEntity
 {
     public int IdReg { get; set; }
 
-    public int? Idestacion { get; set; }
+    public int? IdEstacion { get; set; }
 
-    public string? NoTanque { get; set; }
+    public int? NoTanque { get; set; }
 
     public string? ClaveProducto { get; set; }
 

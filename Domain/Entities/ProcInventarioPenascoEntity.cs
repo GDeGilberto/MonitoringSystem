@@ -1,6 +1,6 @@
 ﻿namespace Domain.Entities;
 
-public partial class ProcInventario
+public partial class ProcInventarioPenascoEntity
 {
     public int IdReg { get; set; }
 
@@ -15,6 +15,4 @@ public partial class ProcInventario
     public double? Temperatura { get; set; }
 
     public DateTime? Fecha { get; set; }
-
-    public virtual CatTanque? CatTanque { get; set; }
 }

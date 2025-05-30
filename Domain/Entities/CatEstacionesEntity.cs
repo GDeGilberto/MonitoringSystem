@@ -1,6 +1,6 @@
 ﻿namespace Domain.Entities;
 
-public partial class CatEstacione
+public partial class CatEstacionesEntity
 {
     public int IdEstacion { get; set; }
 
@@ -34,5 +34,5 @@ public partial class CatEstacione
 
     public int? IdEstacionAutoabasto { get; set; }
 
-    public virtual ICollection<CatTanque> CatTanques { get; set; } = new List<CatTanque>();
+    public virtual ICollection<CatTanquesEntity> CatTanques { get; set; } = new List<CatTanquesEntity>();
 }

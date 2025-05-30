@@ -1,6 +1,6 @@
 ﻿namespace Domain.Entities;
 
-public partial class ProcPedidosEstacione
+public partial class ProcPedidosEstacionesEntity
 {
     public int IdPedido { get; set; }
 

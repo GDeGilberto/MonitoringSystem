@@ -1,6 +1,6 @@
 ﻿namespace Domain.Entities;
 
-public partial class ProcAnalisisDistribuidora
+public partial class ProcAnalisisDistribuidoraEntity
 {
     public int IdPlanta { get; set; }
 

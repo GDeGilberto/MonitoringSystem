@@ -1,6 +1,6 @@
 ﻿namespace Domain.Entities;
 
-public partial class CatProducto
+public partial class CatProductosEntity
 {
     public string ClaveProducto { get; set; } = null!;
 
