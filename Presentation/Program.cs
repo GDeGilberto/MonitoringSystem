@@ -1,7 +1,12 @@
-﻿using Application.UseCases;
-using Domain.Interfaces;
+﻿using Application.Interfaces;
+using Application.Services;
+using Application.UseCases;
+using Domain.Entities;
 using Infrastructure.Communication;
 using Infrastructure.Data;
+using Infrastructure.Presenters;
+using Infrastructure.Repositories;
+using Infrastructure.ViewModels;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -25,9 +30,15 @@ services.AddSingleton<ISerialPortService>(provider =>
     new SerialPortService());
 services.AddSingleton<ISerialPortService, SerialPortService>();
 
+services.AddScoped<IRepository<ProcInventarioEntity>, InventarioRepository>();
+services.AddScoped<IPresenter<ProcInventarioEntity, InventarioViewModel>, InventarioPresenter>();
+services.AddScoped<InventarioService<ProcInventarioEntity, InventarioViewModel>>();
+
 services.AddScoped<ParceDeliveryReport>();
 services.AddScoped<ParseTankInventoryReport>();
+
 services.AddScoped<TerminalConsole>();
+services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
 
 var provider = services.BuildServiceProvider();
 

@@ -1,12 +1,18 @@
-﻿using Application.UseCases;
-using Domain.Interfaces;
+﻿using Application.Models;
+using Application.UseCases;
+using Application.Interfaces;
+using Infrastructure.Data;
 using System.Diagnostics;
 using System.IO.Ports;
+using Application.Services;
+using Domain.Entities;
+using Infrastructure.ViewModels;
 
 namespace Presentation
 {
     public class TerminalConsole
     {
+        private InventarioService<ProcInventarioEntity, InventarioViewModel> _inventarioService;
         private readonly ISerialPortService _serialPortService;
         private bool _isReceivingData = false;
         private readonly object _consoleLock = new();
@@ -20,11 +26,13 @@ namespace Presentation
         public TerminalConsole(
             ISerialPortService serialPortService, 
             ParceDeliveryReport parceDeliveryReport,
-            ParseTankInventoryReport parseTankInventoryReport)
+            ParseTankInventoryReport parseTankInventoryReport,
+            InventarioService<ProcInventarioEntity, InventarioViewModel> inventarioService,
         {
             _serialPortService = serialPortService;
             _parceDeliveryReport = parceDeliveryReport;
             _parseTankInventoryReport = parseTankInventoryReport;
+            _inventarioService = inventarioService;
         }
 
 
@@ -66,7 +74,6 @@ namespace Presentation
 
             _serialPortService.Write(command);
 
-            // Aquí podrías agregar lógica para manejar diferentes tipos de comandos
             ActionCommand(command);
         }
 
@@ -82,9 +89,34 @@ namespace Presentation
             switch (commandPrefix)
             {
                 case "i201":
-                    _currentResponseHandler = (sender, response) =>
+                    _currentResponseHandler = async (sender, response) =>
                     {
-                        var result = _parseTankInventoryReport.Execute(response);
+                        TankReport result = _parseTankInventoryReport.Execute(response);
+                        var date = result.Date;
+
+                        foreach (var tank in result.Tanks)
+                        {
+                            ProcInventarioEntity inventario = new ProcInventarioEntity
+                            {
+                                IdEstacion = 1946,
+                                NoTanque = tank.NoTank,
+                                ClaveProducto = "",
+                                VolumenDisponible = tank.TankData.Volume,
+                                Temperatura = tank.TankData.Temperature,
+                                Fecha = DateTime.Now
+                            };
+
+                            try
+                            {
+                                await _inventarioService.AddAsync(inventario);
+                                Console.WriteLine("Guardado exitoso");
+                            }
+                            catch (Exception ex)
+                            {
+                                Console.WriteLine($"Error al crear inventario para tanque {tank.NoTank}: {ex.Message}");
+                            }
+                        }
+                        
                         // Remover el manejador después de usarlo
                         _serialPortService.CompleteResponseReceived -= _currentResponseHandler;
                         _currentResponseHandler = null;
@@ -105,7 +137,7 @@ namespace Presentation
             }
         }
 
-        public void Run()
+        public async Task Run()
         {
             try
             {
