@@ -89,7 +89,7 @@ namespace Presentation
 
         private void ActionCommand(string command)
         {
-            string commandPrefix = command[..4].ToLower();
+            string commandPrefix = command[..4];
             // Remover el manejador previo si existe
             if (_currentResponseHandler != null)
             {
@@ -101,6 +101,8 @@ namespace Presentation
                 case "i201":
                     _currentResponseHandler = async (sender, response) =>
                     {
+                        if (ValidationRequestEmply(response)) return;
+
                         TankReport result = _parseTankInventoryReport.Execute(response);
                         var date = result.Date;
 
@@ -137,6 +139,8 @@ namespace Presentation
                 case "i202":
                     _currentResponseHandler = async (sender, response) =>
                     {
+                        if (ValidationRequestEmply(response)) return;
+
                         DeliveryTankReport result = _parceDeliveryReport.Execute(response);
 
                         foreach (var tank in result.Tanks)
@@ -160,7 +164,7 @@ namespace Presentation
                             try
                             {
                                 await _descargasService.AddAsync(descarga);
-                                Console.WriteLine("Guardado exitoso");
+                                Console.WriteLine("Ultimos registros guardados");
                             }
                             catch (Exception ex)
                             {
@@ -177,7 +181,22 @@ namespace Presentation
             }
         }
 
-        public async Task Run()
+        public bool ValidationRequestEmply(string input)
+        {
+            string claveVacio = input.Trim('\u0003')[^4..][..2];
+
+            if (claveVacio == "FC")
+            {
+                Console.WriteLine("Sin ningun resultado");
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        public void Run()
         {
             try
             {

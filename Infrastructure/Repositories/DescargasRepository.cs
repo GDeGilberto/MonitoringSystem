@@ -18,7 +18,7 @@ namespace Infrastructure.Repositories
         {
             try
             {
-                ProcDescargaModel descarga = new ProcDescargaModel
+                ProcDescargaModel descarga = new()
                 {
                     IdEstacion = entity.IdEstacion,
                     NoTanque = entity.NoTanque,
@@ -30,9 +30,16 @@ namespace Infrastructure.Repositories
                     FechaFinal = entity.FechaFinal,
                     CantidadCargada = entity.CantidadCargada
                 };
+                var isRegistered = await _dbContext.ProcDescargas
+                    .FirstOrDefaultAsync(d => d.IdEstacion == descarga.IdEstacion 
+                        && d.NoTanque == descarga.NoTanque 
+                        && d.FechaInicio.Date == descarga.FechaInicio.Date);
 
-                await _dbContext.ProcDescargas.AddAsync(descarga);
-                await _dbContext.SaveChangesAsync();
+                if (isRegistered == null)
+                {
+                    await _dbContext.ProcDescargas.AddAsync(descarga);
+                    await _dbContext.SaveChangesAsync();
+                }  
             }
             catch (DbUpdateException dbEx)
             {
