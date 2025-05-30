@@ -1,68 +1,66 @@
-﻿using Domain.Entities;
+﻿using Infrastructure.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Data;
 
 public partial class AppDbContext : DbContext
 {
-    public AppDbContext() { }
 
     public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
 
-    public virtual DbSet<CatEstacione> CatEstaciones { get; set; }
+    public virtual DbSet<CatEstacionesModel> CatEstaciones { get; set; }
 
-    public virtual DbSet<CatEstatusPedido> CatEstatusPedidos { get; set; }
+    public virtual DbSet<CatEstatusPedidoModel> CatEstatusPedidos { get; set; }
 
-    public virtual DbSet<CatProducto> CatProductos { get; set; }
+    public virtual DbSet<CatProductoModel> CatProductos { get; set; }
 
-    public virtual DbSet<CatTanque> CatTanques { get; set; }
+    public virtual DbSet<CatTanqueModel> CatTanques { get; set; }
 
-    public virtual DbSet<CatValorInventario> CatValorInventarios { get; set; }
+    public virtual DbSet<CatValorInventarioModel> CatValorInventarios { get; set; }
 
-    public virtual DbSet<ProcAnalisisDistribuidora> ProcAnalisisDistribuidoras { get; set; }
+    public virtual DbSet<ProcAnalisisDistribuidoraModel> ProcAnalisisDistribuidoras { get; set; }
 
-    public virtual DbSet<ProcAnalisisPedido> ProcAnalisisPedidos { get; set; }
+    public virtual DbSet<ProcAnalisisPedidoModel> ProcAnalisisPedidos { get; set; }
 
-    public virtual DbSet<ProcInventario> ProcInventarios { get; set; }
+    public virtual DbSet<ProcDescargaModel> ProcDescargas { get; set; }
 
-    public virtual DbSet<ProcInventarioPenasco> ProcInventarioPenascos { get; set; }
+    public virtual DbSet<ProcInventarioModel> ProcInventarios { get; set; }
 
-    public virtual DbSet<ProcPedidosEstacione> ProcPedidosEstaciones { get; set; }
+    public virtual DbSet<ProcInventarioPenascoModel> ProcInventarioPenascos { get; set; }
 
-    public virtual DbSet<ProcVentaProducto> ProcVentaProductos { get; set; }
+    public virtual DbSet<ProcPedidosEstacioneModel> ProcPedidosEstaciones { get; set; }
 
-    public virtual DbSet<VistaAux> VistaAuxes { get; set; }
+    public virtual DbSet<ProcVentaProductoModel> ProcVentaProductos { get; set; }
 
-    public virtual DbSet<VistaDatosPedido> VistaDatosPedidos { get; set; }
+    //public virtual DbSet<VistaAuxmODEL> VistaAuxes { get; set; }
 
-    public virtual DbSet<VistaDolare> VistaDolares { get; set; }
+    //public virtual DbSet<VistaDatosPedidoModel> VistaDatosPedidos { get; set; }
 
-    public virtual DbSet<VistaInventario> VistaInventarios { get; set; }
+    //public virtual DbSet<VistaDolareModel> VistaDolares { get; set; }
 
-    public virtual DbSet<VistaInventariosAutoabasto> VistaInventariosAutoabastos { get; set; }
+    //public virtual DbSet<VistaInventarioModel> VistaInventarios { get; set; }
 
-    public virtual DbSet<VistaInventariosCliente> VistaInventariosClientes { get; set; }
+    //public virtual DbSet<VistaInventariosAutoabastoModel> VistaInventariosAutoabastos { get; set; }
 
-    public virtual DbSet<VistaInventariosDistribuidora> VistaInventariosDistribuidoras { get; set; }
+    //public virtual DbSet<VistaInventariosClienteModel> VistaInventariosClientes { get; set; }
 
-    public virtual DbSet<VistaInventariosEstacione> VistaInventariosEstaciones { get; set; }
+    //public virtual DbSet<VistaInventariosDistribuidoraModel> VistaInventariosDistribuidoras { get; set; }
 
-    public virtual DbSet<VistaPedido> VistaPedidos { get; set; }
+    //public virtual DbSet<VistaInventariosEstacioneModel> VistaInventariosEstaciones { get; set; }
 
-    public virtual DbSet<VistaPedidosAutomatico> VistaPedidosAutomaticos { get; set; }
+    //public virtual DbSet<VistaPedidoModel> VistaPedidos { get; set; }
 
-    public virtual DbSet<VistaPedidosDiario> VistaPedidosDiarios { get; set; }
+    //public virtual DbSet<VistaPedidosAutomaticoModel> VistaPedidosAutomaticos { get; set; }
 
-    public virtual DbSet<VistaProducto> VistaProductos { get; set; }
+    //public virtual DbSet<VistaPedidosDiarioModel> VistaPedidosDiarios { get; set; }
 
-    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        => optionsBuilder.UseSqlServer("Server=localhost;Database=DBInventarioGasolineras;User Id=sa;Password=Admin!90;TrustServerCertificate=True;");
+    //public virtual DbSet<VistaProductoModel> VistaProductos { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.UseCollation("SQL_Latin1_General_CP1_CI_AS");
 
-        modelBuilder.Entity<CatEstacione>(entity =>
+        modelBuilder.Entity<CatEstacionesModel>(entity =>
         {
             entity.HasKey(e => e.IdEstacion);
 
@@ -116,7 +114,7 @@ public partial class AppDbContext : DbContext
                 .HasColumnName("ultimoEnvio");
         });
 
-        modelBuilder.Entity<CatEstatusPedido>(entity =>
+        modelBuilder.Entity<CatEstatusPedidoModel>(entity =>
         {
             entity.HasKey(e => e.IdEstatus);
 
@@ -131,7 +129,7 @@ public partial class AppDbContext : DbContext
                 .HasColumnName("nomEstatus");
         });
 
-        modelBuilder.Entity<CatProducto>(entity =>
+        modelBuilder.Entity<CatProductoModel>(entity =>
         {
             entity.HasKey(e => new { e.ClaveProducto, e.IdProductoDist });
 
@@ -150,7 +148,7 @@ public partial class AppDbContext : DbContext
                 .HasColumnName("tipo");
         });
 
-        modelBuilder.Entity<CatTanque>(entity =>
+        modelBuilder.Entity<CatTanqueModel>(entity =>
         {
             entity.HasKey(e => new { e.IdEstacion, e.NoTanque });
 
@@ -178,7 +176,7 @@ public partial class AppDbContext : DbContext
                 .HasConstraintName("FK_Cat_Tanques_Cat_Tanques");
         });
 
-        modelBuilder.Entity<CatValorInventario>(entity =>
+        modelBuilder.Entity<CatValorInventarioModel>(entity =>
         {
             entity.HasKey(e => new { e.Idestacion, e.Claveproducto }).HasName("PK_CatValorInventario");
 
@@ -204,7 +202,7 @@ public partial class AppDbContext : DbContext
                 .HasColumnName("valordias");
         });
 
-        modelBuilder.Entity<ProcAnalisisDistribuidora>(entity =>
+        modelBuilder.Entity<ProcAnalisisDistribuidoraModel>(entity =>
         {
             entity.HasKey(e => new { e.IdPlanta, e.Fecha, e.Claveproducto });
 
@@ -228,7 +226,7 @@ public partial class AppDbContext : DbContext
                 .HasColumnName("viajes");
         });
 
-        modelBuilder.Entity<ProcAnalisisPedido>(entity =>
+        modelBuilder.Entity<ProcAnalisisPedidoModel>(entity =>
         {
             entity.HasKey(e => new { e.IdEstacion, e.ClaveProducto, e.Fecha });
 
@@ -258,7 +256,15 @@ public partial class AppDbContext : DbContext
             entity.Property(e => e.VentaAlMomento).HasColumnName("ventaAlMomento");
         });
 
-        modelBuilder.Entity<ProcInventario>(entity =>
+        modelBuilder.Entity<ProcDescargaModel>(entity =>
+        {
+            entity.ToTable("Proc_Descargas");
+
+            entity.Property(e => e.FechaFinal).HasColumnType("datetime");
+            entity.Property(e => e.FechaInicio).HasColumnType("datetime");
+        });
+
+        modelBuilder.Entity<ProcInventarioModel>(entity =>
         {
             entity.HasKey(e => e.IdReg);
 
@@ -290,7 +296,7 @@ public partial class AppDbContext : DbContext
                 .HasConstraintName("FK_Proc_Inventario_Cat_Estaciones");
         });
 
-        modelBuilder.Entity<ProcInventarioPenasco>(entity =>
+        modelBuilder.Entity<ProcInventarioPenascoModel>(entity =>
         {
             entity.HasKey(e => e.IdReg);
 
@@ -314,7 +320,7 @@ public partial class AppDbContext : DbContext
             entity.Property(e => e.VolumenDisponible).HasColumnName("volumenDisponible");
         });
 
-        modelBuilder.Entity<ProcPedidosEstacione>(entity =>
+        modelBuilder.Entity<ProcPedidosEstacioneModel>(entity =>
         {
             entity.HasKey(e => e.IdPedido);
 
@@ -358,7 +364,7 @@ public partial class AppDbContext : DbContext
                 .HasColumnName("nomProducto");
         });
 
-        modelBuilder.Entity<ProcVentaProducto>(entity =>
+        modelBuilder.Entity<ProcVentaProductoModel>(entity =>
         {
             entity.HasKey(e => new { e.Idestacion, e.ClaveProducto, e.Fechaventa });
 
@@ -376,213 +382,213 @@ public partial class AppDbContext : DbContext
             entity.Property(e => e.VolumenVenta).HasColumnName("volumenVenta");
         });
 
-        modelBuilder.Entity<VistaAux>(entity =>
-        {
-            entity
-                .HasNoKey()
-                .ToView("VistaAux");
+        //modelBuilder.Entity<VistaAuxmODEL>(entity =>
+        //{
+        //    entity
+        //        .HasNoKey()
+        //        .ToView("VistaAux");
 
-            entity.Property(e => e.Estacion).HasColumnName("estacion");
-            entity.Property(e => e.Ultimoenvio)
-                .HasColumnType("datetime")
-                .HasColumnName("ultimoenvio");
-            entity.Property(e => e._32011).HasColumnName("32011");
-            entity.Property(e => e._32012).HasColumnName("32012");
-            entity.Property(e => e._34006).HasColumnName("34006");
-        });
+        //    entity.Property(e => e.Estacion).HasColumnName("estacion");
+        //    entity.Property(e => e.Ultimoenvio)
+        //        .HasColumnType("datetime")
+        //        .HasColumnName("ultimoenvio");
+        //    entity.Property(e => e._32011).HasColumnName("32011");
+        //    entity.Property(e => e._32012).HasColumnName("32012");
+        //    entity.Property(e => e._34006).HasColumnName("34006");
+        //});
 
-        modelBuilder.Entity<VistaDatosPedido>(entity =>
-        {
-            entity
-                .HasNoKey()
-                .ToView("VISTA_DATOS_PEDIDOS");
+        //modelBuilder.Entity<VistaDatosPedidoModel>(entity =>
+        //{
+        //    entity
+        //        .HasNoKey()
+        //        .ToView("VISTA_DATOS_PEDIDOS");
 
-            entity.Property(e => e.ClaveProducto)
-                .HasMaxLength(6)
-                .IsUnicode(false)
-                .IsFixedLength()
-                .HasColumnName("claveProducto");
-            entity.Property(e => e.Descripcion)
-                .HasMaxLength(6)
-                .IsUnicode(false)
-                .IsFixedLength()
-                .HasColumnName("descripcion");
-            entity.Property(e => e.Idestacion).HasColumnName("idestacion");
-            entity.Property(e => e._7dias).HasColumnName("7Dias");
-        });
+        //    entity.Property(e => e.ClaveProducto)
+        //        .HasMaxLength(6)
+        //        .IsUnicode(false)
+        //        .IsFixedLength()
+        //        .HasColumnName("claveProducto");
+        //    entity.Property(e => e.Descripcion)
+        //        .HasMaxLength(6)
+        //        .IsUnicode(false)
+        //        .IsFixedLength()
+        //        .HasColumnName("descripcion");
+        //    entity.Property(e => e.Idestacion).HasColumnName("idestacion");
+        //    entity.Property(e => e._7dias).HasColumnName("7Dias");
+        //});
 
-        modelBuilder.Entity<VistaDolare>(entity =>
-        {
-            entity
-                .HasNoKey()
-                .ToView("Vista_Dolares");
+        //modelBuilder.Entity<VistaDolareModel>(entity =>
+        //{
+        //    entity
+        //        .HasNoKey()
+        //        .ToView("Vista_Dolares");
 
-            entity.Property(e => e.Dolares)
-                .HasColumnType("numeric(38, 2)")
-                .HasColumnName("dolares");
-            entity.Property(e => e.Estacion).HasColumnName("estacion");
-            entity.Property(e => e.Fecha).HasColumnType("datetime");
-        });
+        //    entity.Property(e => e.Dolares)
+        //        .HasColumnType("numeric(38, 2)")
+        //        .HasColumnName("dolares");
+        //    entity.Property(e => e.Estacion).HasColumnName("estacion");
+        //    entity.Property(e => e.Fecha).HasColumnType("datetime");
+        //});
 
-        modelBuilder.Entity<VistaInventario>(entity =>
-        {
-            entity
-                .HasNoKey()
-                .ToView("Vista_Inventarios");
+        //modelBuilder.Entity<VistaInventarioModel>(entity =>
+        //{
+        //    entity
+        //        .HasNoKey()
+        //        .ToView("Vista_Inventarios");
 
-            entity.Property(e => e.DifRealTeoricoDiesel).HasColumnType("decimal(18, 2)");
-            entity.Property(e => e.DifRealTeoricoMagna).HasColumnType("decimal(18, 2)");
-            entity.Property(e => e.DifRealTeoricoPremium).HasColumnType("decimal(18, 2)");
-            entity.Property(e => e.Estacion).HasColumnName("estacion");
-            entity.Property(e => e.Ultimoenvio)
-                .HasColumnType("datetime")
-                .HasColumnName("ultimoenvio");
-            entity.Property(e => e._32011).HasColumnName("32011");
-            entity.Property(e => e._32012).HasColumnName("32012");
-            entity.Property(e => e._34006).HasColumnName("34006");
-        });
+        //    entity.Property(e => e.DifRealTeoricoDiesel).HasColumnType("decimal(18, 2)");
+        //    entity.Property(e => e.DifRealTeoricoMagna).HasColumnType("decimal(18, 2)");
+        //    entity.Property(e => e.DifRealTeoricoPremium).HasColumnType("decimal(18, 2)");
+        //    entity.Property(e => e.Estacion).HasColumnName("estacion");
+        //    entity.Property(e => e.Ultimoenvio)
+        //        .HasColumnType("datetime")
+        //        .HasColumnName("ultimoenvio");
+        //    entity.Property(e => e._32011).HasColumnName("32011");
+        //    entity.Property(e => e._32012).HasColumnName("32012");
+        //    entity.Property(e => e._34006).HasColumnName("34006");
+        //});
 
-        modelBuilder.Entity<VistaInventariosAutoabasto>(entity =>
-        {
-            entity
-                .HasNoKey()
-                .ToView("Vista_Inventarios_Autoabastos");
+        //modelBuilder.Entity<VistaInventariosAutoabastoModel>(entity =>
+        //{
+        //    entity
+        //        .HasNoKey()
+        //        .ToView("Vista_Inventarios_Autoabastos");
 
-            entity.Property(e => e.Estacion).HasColumnName("estacion");
-            entity.Property(e => e.Ultimoenvio)
-                .HasColumnType("datetime")
-                .HasColumnName("ultimoenvio");
-            entity.Property(e => e._32011).HasColumnName("32011");
-            entity.Property(e => e._32012).HasColumnName("32012");
-            entity.Property(e => e._34006).HasColumnName("34006");
-        });
+        //    entity.Property(e => e.Estacion).HasColumnName("estacion");
+        //    entity.Property(e => e.Ultimoenvio)
+        //        .HasColumnType("datetime")
+        //        .HasColumnName("ultimoenvio");
+        //    entity.Property(e => e._32011).HasColumnName("32011");
+        //    entity.Property(e => e._32012).HasColumnName("32012");
+        //    entity.Property(e => e._34006).HasColumnName("34006");
+        //});
 
-        modelBuilder.Entity<VistaInventariosCliente>(entity =>
-        {
-            entity
-                .HasNoKey()
-                .ToView("Vista_Inventarios_Clientes");
+        //modelBuilder.Entity<VistaInventariosClienteModel>(entity =>
+        //{
+        //    entity
+        //        .HasNoKey()
+        //        .ToView("Vista_Inventarios_Clientes");
 
-            entity.Property(e => e.Estacion)
-                .HasMaxLength(30)
-                .IsUnicode(false)
-                .HasColumnName("estacion");
-            entity.Property(e => e.Idcliente).HasColumnName("idcliente");
-            entity.Property(e => e.Ultimoenvio)
-                .HasColumnType("datetime")
-                .HasColumnName("ultimoenvio");
-            entity.Property(e => e._32011).HasColumnName("32011");
-            entity.Property(e => e._32012).HasColumnName("32012");
-            entity.Property(e => e._34006).HasColumnName("34006");
-        });
+        //    entity.Property(e => e.Estacion)
+        //        .HasMaxLength(30)
+        //        .IsUnicode(false)
+        //        .HasColumnName("estacion");
+        //    entity.Property(e => e.Idcliente).HasColumnName("idcliente");
+        //    entity.Property(e => e.Ultimoenvio)
+        //        .HasColumnType("datetime")
+        //        .HasColumnName("ultimoenvio");
+        //    entity.Property(e => e._32011).HasColumnName("32011");
+        //    entity.Property(e => e._32012).HasColumnName("32012");
+        //    entity.Property(e => e._34006).HasColumnName("34006");
+        //});
 
-        modelBuilder.Entity<VistaInventariosDistribuidora>(entity =>
-        {
-            entity
-                .HasNoKey()
-                .ToView("Vista_Inventarios_Distribuidoras");
+        //modelBuilder.Entity<VistaInventariosDistribuidoraModel>(entity =>
+        //{
+        //    entity
+        //        .HasNoKey()
+        //        .ToView("Vista_Inventarios_Distribuidoras");
 
-            entity.Property(e => e.Estacion).HasColumnName("estacion");
-            entity.Property(e => e.Ultimoenvio)
-                .HasColumnType("datetime")
-                .HasColumnName("ultimoenvio");
-            entity.Property(e => e._31000).HasColumnName("31000");
-            entity.Property(e => e._32011).HasColumnName("32011");
-            entity.Property(e => e._32012).HasColumnName("32012");
-            entity.Property(e => e._34006a).HasColumnName("34006A");
-            entity.Property(e => e._34006b).HasColumnName("34006B");
-            entity.Property(e => e._34008).HasColumnName("34008");
-            entity.Property(e => e._34010).HasColumnName("34010");
-            entity.Property(e => e._34011).HasColumnName("34011");
-        });
+        //    entity.Property(e => e.Estacion).HasColumnName("estacion");
+        //    entity.Property(e => e.Ultimoenvio)
+        //        .HasColumnType("datetime")
+        //        .HasColumnName("ultimoenvio");
+        //    entity.Property(e => e._31000).HasColumnName("31000");
+        //    entity.Property(e => e._32011).HasColumnName("32011");
+        //    entity.Property(e => e._32012).HasColumnName("32012");
+        //    entity.Property(e => e._34006a).HasColumnName("34006A");
+        //    entity.Property(e => e._34006b).HasColumnName("34006B");
+        //    entity.Property(e => e._34008).HasColumnName("34008");
+        //    entity.Property(e => e._34010).HasColumnName("34010");
+        //    entity.Property(e => e._34011).HasColumnName("34011");
+        //});
 
-        modelBuilder.Entity<VistaInventariosEstacione>(entity =>
-        {
-            entity
-                .HasNoKey()
-                .ToView("Vista_Inventarios_Estaciones");
+        //modelBuilder.Entity<VistaInventariosEstacioneModel>(entity =>
+        //{
+        //    entity
+        //        .HasNoKey()
+        //        .ToView("Vista_Inventarios_Estaciones");
 
-            entity.Property(e => e.Estacion).HasColumnName("estacion");
-            entity.Property(e => e.Ultimoenvio)
-                .HasColumnType("datetime")
-                .HasColumnName("ultimoenvio");
-            entity.Property(e => e._32011).HasColumnName("32011");
-            entity.Property(e => e._32012).HasColumnName("32012");
-            entity.Property(e => e._34006).HasColumnName("34006");
-        });
+        //    entity.Property(e => e.Estacion).HasColumnName("estacion");
+        //    entity.Property(e => e.Ultimoenvio)
+        //        .HasColumnType("datetime")
+        //        .HasColumnName("ultimoenvio");
+        //    entity.Property(e => e._32011).HasColumnName("32011");
+        //    entity.Property(e => e._32012).HasColumnName("32012");
+        //    entity.Property(e => e._34006).HasColumnName("34006");
+        //});
 
-        modelBuilder.Entity<VistaPedido>(entity =>
-        {
-            entity
-                .HasNoKey()
-                .ToView("Vista_Pedidos");
+        //modelBuilder.Entity<VistaPedidoModel>(entity =>
+        //{
+        //    entity
+        //        .HasNoKey()
+        //        .ToView("Vista_Pedidos");
 
-            entity.Property(e => e.CapTanque).HasColumnType("decimal(38, 0)");
-            entity.Property(e => e.ClaveProducto)
-                .HasMaxLength(6)
-                .IsUnicode(false)
-                .IsFixedLength()
-                .HasColumnName("claveProducto");
-            entity.Property(e => e.Fechaventa)
-                .HasColumnType("datetime")
-                .HasColumnName("fechaventa");
-            entity.Property(e => e.Idcliente).HasColumnName("idcliente");
-            entity.Property(e => e.Idestacion).HasColumnName("idestacion");
-            entity.Property(e => e.Pedidos).HasColumnType("numeric(18, 2)");
-            entity.Property(e => e.Promedio).HasColumnName("promedio");
-            entity.Property(e => e.VolumenVenta).HasColumnName("volumenVenta");
-        });
+        //    entity.Property(e => e.CapTanque).HasColumnType("decimal(38, 0)");
+        //    entity.Property(e => e.ClaveProducto)
+        //        .HasMaxLength(6)
+        //        .IsUnicode(false)
+        //        .IsFixedLength()
+        //        .HasColumnName("claveProducto");
+        //    entity.Property(e => e.Fechaventa)
+        //        .HasColumnType("datetime")
+        //        .HasColumnName("fechaventa");
+        //    entity.Property(e => e.Idcliente).HasColumnName("idcliente");
+        //    entity.Property(e => e.Idestacion).HasColumnName("idestacion");
+        //    entity.Property(e => e.Pedidos).HasColumnType("numeric(18, 2)");
+        //    entity.Property(e => e.Promedio).HasColumnName("promedio");
+        //    entity.Property(e => e.VolumenVenta).HasColumnName("volumenVenta");
+        //});
 
-        modelBuilder.Entity<VistaPedidosAutomatico>(entity =>
-        {
-            entity
-                .HasNoKey()
-                .ToView("Vista_Pedidos_Automaticos");
+        //modelBuilder.Entity<VistaPedidosAutomaticoModel>(entity =>
+        //{
+        //    entity
+        //        .HasNoKey()
+        //        .ToView("Vista_Pedidos_Automaticos");
 
-            entity.Property(e => e.Clave)
-                .HasMaxLength(30)
-                .IsUnicode(false);
-            entity.Property(e => e.Estacion)
-                .HasMaxLength(30)
-                .IsUnicode(false);
-            entity.Property(e => e.NomProducto)
-                .HasMaxLength(30)
-                .IsUnicode(false)
-                .UseCollation("Modern_Spanish_CI_AS");
-        });
+        //    entity.Property(e => e.Clave)
+        //        .HasMaxLength(30)
+        //        .IsUnicode(false);
+        //    entity.Property(e => e.Estacion)
+        //        .HasMaxLength(30)
+        //        .IsUnicode(false);
+        //    entity.Property(e => e.NomProducto)
+        //        .HasMaxLength(30)
+        //        .IsUnicode(false)
+        //        .UseCollation("Modern_Spanish_CI_AS");
+        //});
 
-        modelBuilder.Entity<VistaPedidosDiario>(entity =>
-        {
-            entity
-                .HasNoKey()
-                .ToView("Vista_Pedidos_Diarios");
+        //modelBuilder.Entity<VistaPedidosDiarioModel>(entity =>
+        //{
+        //    entity
+        //        .HasNoKey()
+        //        .ToView("Vista_Pedidos_Diarios");
 
-            entity.Property(e => e.Distribuidora)
-                .HasMaxLength(100)
-                .IsUnicode(false);
-            entity.Property(e => e.Fecha).HasColumnType("datetime");
-            entity.Property(e => e.Idestacion).HasColumnName("idestacion");
-            entity.Property(e => e.NomEstacion)
-                .HasMaxLength(100)
-                .IsUnicode(false);
-            entity.Property(e => e.NomProducto)
-                .HasMaxLength(50)
-                .IsUnicode(false)
-                .UseCollation("Modern_Spanish_CI_AS");
-        });
+        //    entity.Property(e => e.Distribuidora)
+        //        .HasMaxLength(100)
+        //        .IsUnicode(false);
+        //    entity.Property(e => e.Fecha).HasColumnType("datetime");
+        //    entity.Property(e => e.Idestacion).HasColumnName("idestacion");
+        //    entity.Property(e => e.NomEstacion)
+        //        .HasMaxLength(100)
+        //        .IsUnicode(false);
+        //    entity.Property(e => e.NomProducto)
+        //        .HasMaxLength(50)
+        //        .IsUnicode(false)
+        //        .UseCollation("Modern_Spanish_CI_AS");
+        //});
 
-        modelBuilder.Entity<VistaProducto>(entity =>
-        {
-            entity
-                .HasNoKey()
-                .ToView("VISTA_PRODUCTOS");
+        //modelBuilder.Entity<VistaProductoModel>(entity =>
+        //{
+        //    entity
+        //        .HasNoKey()
+        //        .ToView("VISTA_PRODUCTOS");
 
-            entity.Property(e => e.ClaveProducto)
-                .HasMaxLength(6)
-                .IsUnicode(false)
-                .IsFixedLength()
-                .HasColumnName("claveProducto");
-        });
+        //    entity.Property(e => e.ClaveProducto)
+        //        .HasMaxLength(6)
+        //        .IsUnicode(false)
+        //        .IsFixedLength()
+        //        .HasColumnName("claveProducto");
+        //});
 
         OnModelCreatingPartial(modelBuilder);
     }
