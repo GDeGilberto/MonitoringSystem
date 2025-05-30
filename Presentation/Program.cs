@@ -30,8 +30,10 @@ services.AddSingleton<ISerialPortService>(provider =>
     new SerialPortService());
 services.AddSingleton<ISerialPortService, SerialPortService>();
 
+services.AddScoped<IRepository<ProcDescargasEntity>, DescargasRepository>();
 services.AddScoped<IRepository<ProcInventarioEntity>, InventarioRepository>();
 services.AddScoped<IPresenter<ProcInventarioEntity, InventarioViewModel>, InventarioPresenter>();
+services.AddScoped<DescargasService<ProcDescargasEntity>>();
 services.AddScoped<InventarioService<ProcInventarioEntity, InventarioViewModel>>();
 
 services.AddScoped<ParceDeliveryReport>();

@@ -13,6 +13,7 @@ namespace Presentation
     public class TerminalConsole
     {
         private InventarioService<ProcInventarioEntity, InventarioViewModel> _inventarioService;
+        private DescargasService<ProcDescargasEntity> _descargasService;
         private readonly ISerialPortService _serialPortService;
         private bool _isReceivingData = false;
         private readonly object _consoleLock = new();
@@ -28,11 +29,13 @@ namespace Presentation
             ParceDeliveryReport parceDeliveryReport,
             ParseTankInventoryReport parseTankInventoryReport,
             InventarioService<ProcInventarioEntity, InventarioViewModel> inventarioService,
+            DescargasService<ProcDescargasEntity> descargasService)
         {
             _serialPortService = serialPortService;
             _parceDeliveryReport = parceDeliveryReport;
             _parseTankInventoryReport = parseTankInventoryReport;
             _inventarioService = inventarioService;
+            _descargasService = descargasService;
         }
 
 
@@ -125,9 +128,39 @@ namespace Presentation
                     break;
 
                 case "i202":
-                    _currentResponseHandler = (sender, response) =>
+                    _currentResponseHandler = async (sender, response) =>
                     {
-                        var result = _parceDeliveryReport.Execute(response);
+                        DeliveryTankReport result = _parceDeliveryReport.Execute(response);
+
+                        foreach (var tank in result.Tanks)
+                        {
+                            var volumenInicial = tank.Deliveries.FirstOrDefault()?.Start.Volume ?? 0;
+                            var volumenDisponible = tank.Deliveries.FirstOrDefault()?.End.Volume ?? 0;
+
+                            ProcDescargasEntity descarga = new ProcDescargasEntity
+                            {
+                                IdEstacion = 1946,
+                                NoTanque = tank.NoTank,
+                                VolumenInicial = volumenInicial,
+                                TemperaturaInicial = tank.Deliveries.FirstOrDefault()?.Start.Temperature ?? 0,
+                                FechaInicial = tank.Deliveries.FirstOrDefault().Start.Date,
+                                VolumenDisponible = volumenDisponible,
+                                TemperaturaFinal = tank.Deliveries.FirstOrDefault()?.End.Temperature ?? 0,
+                                FechaFinal = tank.Deliveries.FirstOrDefault().End.Date,
+                                CantidadCargada = volumenDisponible - volumenInicial
+                            };
+                            
+                            try
+                            {
+                                await _descargasService.AddAsync(descarga);
+                                Console.WriteLine("Guardado exitoso");
+                            }
+                            catch (Exception ex)
+                            {
+                                Console.WriteLine($"Error al crear inventario para tanque {tank.NoTank}: {ex.Message}");
+                            }
+                        }
+
                         // Remover el manejador después de usarlo
                         _serialPortService.CompleteResponseReceived -= _currentResponseHandler;
                         _currentResponseHandler = null;
