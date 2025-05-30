@@ -24,6 +24,7 @@ var services = new ServiceCollection();
 // Configuración de la base de datos
 services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(configuration.GetConnectionString("DefaultConnection")));
+services.AddSingleton<IConfiguration>(configuration);
 
 // Configuración del servicio serial
 services.AddSingleton<ISerialPortService>(provider =>

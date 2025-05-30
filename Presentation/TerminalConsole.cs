@@ -1,41 +1,48 @@
-﻿using Application.Models;
-using Application.UseCases;
-using Application.Interfaces;
-using Infrastructure.Data;
-using System.Diagnostics;
-using System.IO.Ports;
+﻿using Application.Interfaces;
+using Application.Models;
 using Application.Services;
+using Application.UseCases;
+using Azure;
 using Domain.Entities;
 using Infrastructure.ViewModels;
+using Microsoft.Extensions.Configuration;
+using System.Diagnostics;
+using System.IO.Ports;
 
 namespace Presentation
 {
     public class TerminalConsole
     {
-        private InventarioService<ProcInventarioEntity, InventarioViewModel> _inventarioService;
-        private DescargasService<ProcDescargasEntity> _descargasService;
+        private readonly InventarioService<ProcInventarioEntity, InventarioViewModel> _inventarioService;
+        private readonly DescargasService<ProcDescargasEntity> _descargasService;
         private readonly ISerialPortService _serialPortService;
-        private bool _isReceivingData = false;
         private readonly object _consoleLock = new();
         private readonly Stopwatch _responseStopwatch = new();
-        private static string _lastSuccessfulPort = "COM3";
-        private static int _lastSuccessfulBaudRate = 2400;
         public  ParceDeliveryReport _parceDeliveryReport;
         public  ParseTankInventoryReport _parseTankInventoryReport;
-        private EventHandler<string> _currentResponseHandler;
+        private EventHandler<string>? _currentResponseHandler;
+
+        private string _portName;
+        private int _baudRate;
+        private readonly int _idEstacion;
+        private bool _isReceivingData = false;
 
         public TerminalConsole(
             ISerialPortService serialPortService, 
             ParceDeliveryReport parceDeliveryReport,
             ParseTankInventoryReport parseTankInventoryReport,
             InventarioService<ProcInventarioEntity, InventarioViewModel> inventarioService,
-            DescargasService<ProcDescargasEntity> descargasService)
+            DescargasService<ProcDescargasEntity> descargasService,
+            IConfiguration config)
         {
             _serialPortService = serialPortService;
             _parceDeliveryReport = parceDeliveryReport;
             _parseTankInventoryReport = parseTankInventoryReport;
             _inventarioService = inventarioService;
             _descargasService = descargasService;
+            _portName = config["SerialPort:PortName"];
+            _baudRate = int.Parse(config["SerialPort:BaudRate"]);
+            _idEstacion = int.Parse(config["Estacion:Id"]);
         }
 
 
@@ -99,9 +106,9 @@ namespace Presentation
 
                         foreach (var tank in result.Tanks)
                         {
-                            ProcInventarioEntity inventario = new ProcInventarioEntity
+                            ProcInventarioEntity inventario = new()
                             {
-                                IdEstacion = 1946,
+                                IdEstacion = _idEstacion,
                                 NoTanque = tank.NoTank,
                                 ClaveProducto = "",
                                 VolumenDisponible = tank.TankData.Volume,
@@ -137,9 +144,9 @@ namespace Presentation
                             var volumenInicial = tank.Deliveries.FirstOrDefault()?.Start.Volume ?? 0;
                             var volumenDisponible = tank.Deliveries.FirstOrDefault()?.End.Volume ?? 0;
 
-                            ProcDescargasEntity descarga = new ProcDescargasEntity
+                            ProcDescargasEntity descarga = new()
                             {
-                                IdEstacion = 1946,
+                                IdEstacion = _idEstacion,
                                 NoTanque = tank.NoTank,
                                 VolumenInicial = volumenInicial,
                                 TemperaturaInicial = tank.Deliveries.FirstOrDefault()?.Start.Temperature ?? 0,
@@ -201,8 +208,8 @@ namespace Presentation
         {
             try
             {
-                Console.WriteLine($"\nIntentando conexión con {_lastSuccessfulPort} @ {_lastSuccessfulBaudRate} baud...");
-                _serialPortService.Initialize(_lastSuccessfulPort, _lastSuccessfulBaudRate);
+                Console.WriteLine($"\nIntentando conexión con {_portName} @ {_baudRate} baud...");
+                _serialPortService.Initialize(_portName, _baudRate);
                 _serialPortService.DataReceived += OnDataReceived;
                 _serialPortService.CompleteResponseReceived += OnCompleteResponseReceived;
                 return true;
@@ -245,8 +252,8 @@ namespace Presentation
         private void InitializeSerialPort()
         {
             bool portInitialized = false;
-            string portName = _lastSuccessfulPort;
-            int baudRate = _lastSuccessfulBaudRate;
+            string portName = _portName;
+            int baudRate = _baudRate;
 
             while (!portInitialized)
             {
@@ -307,8 +314,8 @@ namespace Presentation
             _serialPortService.DataReceived += OnDataReceived;
             _serialPortService.CompleteResponseReceived += OnCompleteResponseReceived;
 
-            _lastSuccessfulPort = portName;
-            _lastSuccessfulBaudRate = baudRate;
+            _portName = portName;
+            _baudRate = baudRate;
 
             Console.ForegroundColor = ConsoleColor.Green;
             Console.WriteLine($"¡Conexión exitosa con {portName}!");
@@ -342,7 +349,7 @@ namespace Presentation
             return baudRate;
         }
 
-        private static (string port, int baudRate) TryAutoDetectPort()
+        private (string port, int baudRate) TryAutoDetectPort()
         {
             string[] availablePorts = SerialPort.GetPortNames();
 
@@ -357,7 +364,7 @@ namespace Presentation
 
                 try
                 {
-                    using var testPort = new SerialPort(port, _lastSuccessfulBaudRate);
+                    using var testPort = new SerialPort(port, _baudRate);
 
                     testPort.Open();
                     testPort.Close();
@@ -366,7 +373,7 @@ namespace Presentation
                     Console.WriteLine("OK");
                     Console.ResetColor();
 
-                    return (port, _lastSuccessfulBaudRate);
+                    return (port, _baudRate);
                 }
                 catch
                 {
