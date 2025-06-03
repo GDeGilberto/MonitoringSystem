@@ -17,13 +17,36 @@ namespace Infrastructure.Communication
         public event EventHandler<string> DataReceived;
         public event EventHandler<string> CompleteResponseReceived;
 
+        public bool IsOpen
+        {
+            get
+            {
+                lock (_lock)
+                {
+                    return _serialPort != null && _serialPort.IsOpen;
+                }
+            }
+        }
+
         public void Initialize(string portName, int baudRate)
         {
-            if (_disposed)
-                throw new ObjectDisposedException("El puerto serial ha sido cerrado");
+            //if (_disposed)
+            //    throw new ObjectDisposedException("El puerto serial ha sido cerrado");
 
             lock (_lock)
             {
+                if (_serialPort != null)
+                {
+                    if (_serialPort.IsOpen)
+                    {
+                        _serialPort.Close();
+                    }
+                    _serialPort.Dispose();
+                    _serialPort = null;
+                    _initialized = false;
+                    _disposed = false;
+                }
+
                 try
                 {
                     Console.WriteLine($"Intentando inicializar puerto {portName}...");
@@ -108,8 +131,8 @@ namespace Infrastructure.Communication
 
         public void Write(string data)
         {
-            if (_disposed)
-                throw new ObjectDisposedException("El puerto serial ha sido cerrado");
+            //if (_disposed)
+            //    throw new ObjectDisposedException("El puerto serial ha sido cerrado");
 
             lock (_lock)
             {
@@ -156,5 +179,13 @@ namespace Infrastructure.Communication
         }
 
         public void Dispose() => Close();
+
+        public void ClearBuffer()
+        {
+            lock (_lock)
+            {
+                _receivedDataBuffer.Clear();
+            }
+        }
     }
 }

@@ -17,7 +17,6 @@ namespace Application.Services
         public async Task<IEnumerable<TOutput>> GetAllAsync()
         {
             var inventarios = await _repository.GetAllAsync();
-            Console.WriteLine($"Inventarios obtenidos: {inventarios.Count()}");
             return _presenter.Present(inventarios);
         }
 

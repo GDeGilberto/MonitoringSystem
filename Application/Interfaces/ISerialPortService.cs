@@ -7,5 +7,7 @@
         void Initialize(string portName, int baudRate);
         void Write(string data);
         void Close();
+        void ClearBuffer();
+        bool IsOpen { get; }
     }
 }
