@@ -29,6 +29,7 @@ builder.Services.AddHangfireServer();
 builder.Services.AddSingleton<ISerialPortService>(provider =>
     new SerialPortService());
 builder.Services.AddSingleton<ISerialPortService, SerialPortService>();
+builder.Services.AddSingleton<ISerialPortService, SerialPortManager>();
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
