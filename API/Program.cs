@@ -60,10 +60,6 @@ app.UseAuthorization();
 
 app.UseHangfireDashboard();
 
-//RecurringJob.AddOrUpdate<InventarioJob>(
-//    "job-inventario-cada-minuto",
-//    job => job.Execute(),
-//    Cron.Minutely); // Every minute
 RecurringJob.AddOrUpdate<InventarioJob>(
     "job-volumenYTemperatura-de-tanques-3-minutos",
     job => job.Execute(),
@@ -71,9 +67,7 @@ RecurringJob.AddOrUpdate<InventarioJob>(
 RecurringJob.AddOrUpdate<DescargasJobs>(
     "job-Cargas-a-los-tanques",
     job => job.Execute(),
-    "*/2 * * * *");
-//Cron.Daily(6)); // 6:00 AM daily
-
+    Cron.Daily(6)); // 6:00 AM daily
 
 app.MapControllers();
 
