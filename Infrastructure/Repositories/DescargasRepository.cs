@@ -3,10 +3,11 @@ using Domain.Entities;
 using Infrastructure.Data;
 using Infrastructure.Models;
 using Microsoft.EntityFrameworkCore;
+using System.Linq.Expressions;
 
 namespace Infrastructure.Repositories
 {
-    public class DescargasRepository : IRepository<ProcDescargasEntity>
+    public class DescargasRepository : IRepository<DescargasEntity>, IRepositorySearch<ProcDescargaModel, DescargasEntity>
     {
         private readonly AppDbContext _dbContext;
         public DescargasRepository(AppDbContext dbContext)
@@ -14,7 +15,7 @@ namespace Infrastructure.Repositories
             _dbContext = dbContext;
         }
 
-        public async Task AddAsync(ProcDescargasEntity entity)
+        public async Task AddAsync(DescargasEntity entity)
         {
             try
             {
@@ -47,14 +48,59 @@ namespace Infrastructure.Repositories
             }
         }
 
-        public Task<IEnumerable<ProcDescargasEntity>> GetAllAsync()
+        public async Task<IEnumerable<DescargasEntity>> GetAllAsync()
+            => await _dbContext.ProcDescargas
+                .Select(d => new DescargasEntity
+                (
+                    d.Id,
+                    d.IdEstacion,
+                    d.NoTanque,
+                    d.VolumenInicio,
+                    d.TemperaturaInicio,
+                    d.FechaInicio,
+                    d.VolumenDisponible,
+                    d.TemperaturaFinal,
+                    d.FechaFinal,
+                    d.CantidadCargada
+                )).ToListAsync();
+
+        public async Task<IEnumerable<DescargasEntity>> GetAsync(Expression<Func<ProcDescargaModel, bool>> predicate)
         {
-            throw new NotImplementedException();
+            var descargasModel = await _dbContext.ProcDescargas
+                .Where(predicate)
+                .ToListAsync();
+
+            return descargasModel.Select(d => new DescargasEntity
+                (
+                    d.Id,
+                    d.IdEstacion,
+                    d.NoTanque,
+                    d.VolumenInicio,
+                    d.TemperaturaInicio,
+                    d.FechaInicio,
+                    d.VolumenDisponible,
+                    d.TemperaturaFinal,
+                    d.FechaFinal,
+                    d.CantidadCargada
+                ));
         }
 
-        public Task<ProcDescargasEntity> GetByIdAsync(int id)
+        public async Task<DescargasEntity> GetByIdAsync(int id)
         {
-            throw new NotImplementedException();
+            var descargaModel = await _dbContext.ProcDescargas.FindAsync(id);
+            return new DescargasEntity
+                (
+                    descargaModel.Id,
+                    descargaModel.IdEstacion,
+                    descargaModel.NoTanque,
+                    descargaModel.VolumenInicio,
+                    descargaModel.TemperaturaInicio,
+                    descargaModel.FechaInicio,
+                    descargaModel.VolumenDisponible,
+                    descargaModel.TemperaturaFinal,
+                    descargaModel.FechaFinal,
+                    descargaModel.CantidadCargada
+                );
         }
     }
 }
