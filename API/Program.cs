@@ -84,6 +84,20 @@ RecurringJob.AddOrUpdate<DescargasJobs>(
 
 app.MapControllers();
 
+app.MapGet("/inventarios{id}", async (GetInventarioByIdUseCase getInventarioUseCase,
+    int id) =>
+{
+    var result = await getInventarioUseCase.ExecuteAsync(id);
+    return Results.Ok(result);
+}).WithName("GetInventariosById");
+
+app.MapPost("/inventario", async (InventarioRequestDTO inventarioRequest,
+    CreateInventarioUseCase<InventarioRequestDTO> inventarioUseCase) =>
+{
+    await inventarioUseCase.ExecuteAsync(inventarioRequest);
+    return Results.Created();
+}).WithName("AddInventario");
+
 app.MapGet("/descargas", async (GetDescargasUseCase getDescargasUseCase) =>
 {
     var result = await getDescargasUseCase.ExecuteAsync();
