@@ -1,10 +1,9 @@
 ﻿using Application.Interfaces;
-using Application.Models;
 using Application.Services;
 using Application.UseCases;
 using Domain.Entities;
-using Infrastructure.ViewModels;
 using Infrastructure.Communication;
+using Infrastructure.ViewModels;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 

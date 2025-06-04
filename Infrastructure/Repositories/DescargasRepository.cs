@@ -31,15 +31,15 @@ namespace Infrastructure.Repositories
                     CantidadCargada = entity.CantidadCargada
                 };
                 var isRegistered = await _dbContext.ProcDescargas
-                    .FirstOrDefaultAsync(d => d.IdEstacion == descarga.IdEstacion 
-                        && d.NoTanque == descarga.NoTanque 
+                    .FirstOrDefaultAsync(d => d.IdEstacion == descarga.IdEstacion
+                        && d.NoTanque == descarga.NoTanque
                         && d.FechaInicio.Date == descarga.FechaInicio.Date);
 
                 if (isRegistered == null)
                 {
                     await _dbContext.ProcDescargas.AddAsync(descarga);
                     await _dbContext.SaveChangesAsync();
-                }  
+                }
             }
             catch (DbUpdateException dbEx)
             {
