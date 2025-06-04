@@ -11,8 +11,8 @@ namespace Presentation
 {
     public class TerminalConsole
     {
-        private readonly InventarioService<ProcInventarioEntity, InventarioViewModel> _inventarioService;
-        private readonly DescargasService<ProcDescargasEntity> _descargasService;
+        private readonly InventarioService<InventarioEntity, InventarioViewModel> _inventarioService;
+        private readonly DescargasService<DescargasEntity> _descargasService;
         private readonly ISerialPortService _serialPortService;
         private readonly object _consoleLock = new();
         private readonly Stopwatch _responseStopwatch = new();
@@ -29,8 +29,8 @@ namespace Presentation
             ISerialPortService serialPortService, 
             ParceDeliveryReport parceDeliveryReport,
             ParseTankInventoryReport parseTankInventoryReport,
-            InventarioService<ProcInventarioEntity, InventarioViewModel> inventarioService,
-            DescargasService<ProcDescargasEntity> descargasService,
+            InventarioService<InventarioEntity, InventarioViewModel> inventarioService,
+            DescargasService<DescargasEntity> descargasService,
             IConfiguration config)
         {
             _serialPortService = serialPortService;
@@ -146,7 +146,7 @@ namespace Presentation
                             var volumenInicial = tank.Deliveries.FirstOrDefault()?.Start.Volume ?? 0;
                             var volumenDisponible = tank.Deliveries.FirstOrDefault()?.End.Volume ?? 0;
 
-                            ProcDescargasEntity descarga = new()
+                            DescargasEntity descarga = new()
                             {
                                 IdEstacion = _idEstacion,
                                 NoTanque = tank.NoTank,

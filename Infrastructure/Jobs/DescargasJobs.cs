@@ -38,7 +38,7 @@ namespace Infrastructure.Jobs
                 .SendCommandAsync(portName, baudRate, command, timeoutMs: 40000);
 
             using var scope = _scopeFactory.CreateScope();
-            var descargasService = scope.ServiceProvider.GetRequiredService<DescargasService<ProcDescargasEntity>>();
+            var descargasService = scope.ServiceProvider.GetRequiredService<DescargasService<DescargasEntity>>();
 
             DeliveryTankReport result = _parceDeliveryReport.Execute(response);
 
@@ -47,18 +47,17 @@ namespace Infrastructure.Jobs
                 var volumenInicial = tank.Deliveries.FirstOrDefault()?.Start.Volume ?? 0;
                 var volumenDisponible = tank.Deliveries.FirstOrDefault()?.End.Volume ?? 0;
 
-                ProcDescargasEntity descarga = new()
-                {
-                    IdEstacion = idEstacion,
-                    NoTanque = tank.NoTank,
-                    VolumenInicial = volumenInicial,
-                    TemperaturaInicial = tank.Deliveries.FirstOrDefault()?.Start.Temperature ?? 0,
-                    FechaInicial = tank.Deliveries.FirstOrDefault()?.Start.Date ?? DateTime.MinValue,
-                    VolumenDisponible = volumenDisponible,
-                    TemperaturaFinal = tank.Deliveries.FirstOrDefault()?.End.Temperature ?? 0,
-                    FechaFinal = tank.Deliveries.FirstOrDefault()?.End.Date ?? DateTime.MinValue,
-                    CantidadCargada = volumenDisponible - volumenInicial
-                };
+                DescargasEntity descarga = new(
+                    idEstacion,
+                    tank.NoTank,
+                    volumenInicial,
+                    tank.Deliveries.FirstOrDefault()?.Start.Temperature ?? 0,
+                    tank.Deliveries.FirstOrDefault()?.Start.Date ?? DateTime.MinValue,
+                    volumenDisponible,
+                    tank.Deliveries.FirstOrDefault()?.End.Temperature ?? 0,
+                    tank.Deliveries.FirstOrDefault()?.End.Date ?? DateTime.MinValue,
+                    volumenDisponible - volumenInicial
+                );
 
                 try
                 {
