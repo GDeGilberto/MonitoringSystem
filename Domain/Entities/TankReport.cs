@@ -1,4 +1,4 @@
-﻿namespace Application.Models
+﻿namespace Domain.Entities
 {
     public class TankReport
     {
