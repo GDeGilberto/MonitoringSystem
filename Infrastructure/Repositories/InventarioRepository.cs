@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Repositories
 {
-    public class InventarioRepository : IRepository<ProcInventarioEntity>
+    public class InventarioRepository : IRepository<InventarioEntity>
     {
         private readonly AppDbContext _dbContext;
 
@@ -14,7 +14,7 @@ namespace Infrastructure.Repositories
         {
             _dbContext = dbContext;
         }
-        public async Task AddAsync(ProcInventarioEntity entity)
+        public async Task AddAsync(InventarioEntity entity)
         {
             var tanque = await _dbContext.CatTanques
                 .FirstOrDefaultAsync(t =>
@@ -46,33 +46,29 @@ namespace Infrastructure.Repositories
             await _dbContext.SaveChangesAsync();
         }
 
-        public async Task<IEnumerable<ProcInventarioEntity>> GetAllAsync()
-        {
-            return await _dbContext.ProcInventarios.Select(i => new ProcInventarioEntity
-            {
-                IdReg = i.IdReg,
-                IdEstacion = i.Idestacion,
-                NoTanque = string.IsNullOrEmpty(i.NoTanque) ? null : int.Parse(i.NoTanque),
-                ClaveProducto = i.ClaveProducto,
-                VolumenDisponible = i.VolumenDisponible,
-                Temperatura = i.Temperatura,
-                Fecha = i.Fecha
-            }).ToListAsync();
-        }
+        public async Task<IEnumerable<InventarioEntity>> GetAllAsync()
+            => await _dbContext.ProcInventarios.Select(i => new InventarioEntity
+            (
+                i.Idestacion,
+                string.IsNullOrEmpty(i.NoTanque) ? null : int.Parse(i.NoTanque),
+                i.ClaveProducto,
+                i.VolumenDisponible,
+                i.Temperatura,
+                i.Fecha
+            )).ToListAsync();
 
-        public async Task<ProcInventarioEntity> GetByIdAsync(int id)
+        public async Task<InventarioEntity> GetByIdAsync(int id)
         {
             var inventario = await _dbContext.ProcInventarios.FindAsync(id);
-            return new ProcInventarioEntity
-            {
-                IdReg = inventario.IdReg,
-                IdEstacion = inventario.Idestacion,
-                NoTanque = int.Parse(inventario.NoTanque),
-                ClaveProducto = inventario.ClaveProducto,
-                VolumenDisponible = inventario.VolumenDisponible,
-                Temperatura = inventario.Temperatura,
-                Fecha = inventario.Fecha
-            };
+            return new InventarioEntity
+            (
+                inventario.Idestacion,
+                int.Parse(inventario.NoTanque),
+                inventario.ClaveProducto,
+                inventario.VolumenDisponible,
+                inventario.Temperatura,
+                inventario.Fecha
+            );
         }
     }
 }

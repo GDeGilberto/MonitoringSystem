@@ -41,21 +41,20 @@ namespace Infrastructure.Jobs
                 .SendCommandAsync(portName, baudRate, command, timeoutMs: 10000);
 
             using var scope = _scopeFactory.CreateScope();
-            var inventarioService = scope.ServiceProvider.GetRequiredService<InventarioService<ProcInventarioEntity, InventarioViewModel>>();
+            var inventarioService = scope.ServiceProvider.GetRequiredService<InventarioService<InventarioEntity, InventarioViewModel>>();
 
             TankReport result = _parseTankInventoryReport.Execute(response);
 
             foreach (var tank in result.Tanks)
             {
-                ProcInventarioEntity inventario = new()
-                {
-                    IdEstacion = idEstacion,
-                    NoTanque = tank.NoTank,
-                    ClaveProducto = "",
-                    VolumenDisponible = tank.TankData.Volume,
-                    Temperatura = tank.TankData.Temperature,
-                    Fecha = DateTime.Now
-                };
+                InventarioEntity inventario = new(
+                    idEstacion,
+                    tank.NoTank,
+                    "",
+                    tank.TankData.Volume,
+                    tank.TankData.Temperature,
+                    DateTime.Now
+                );
 
                 try
                 {

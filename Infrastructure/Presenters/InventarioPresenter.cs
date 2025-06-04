@@ -4,9 +4,9 @@ using Infrastructure.ViewModels;
 
 namespace Infrastructure.Presenters
 {
-    public class InventarioPresenter : IPresenter<ProcInventarioEntity, InventarioViewModel>
+    public class InventarioPresenter : IPresenter<InventarioEntity, InventarioViewModel>
     {
-        public IEnumerable<InventarioViewModel> Present(IEnumerable<ProcInventarioEntity> data)
+        public IEnumerable<InventarioViewModel> Present(IEnumerable<InventarioEntity> data)
         {
             return data.Select(i => new InventarioViewModel
             {

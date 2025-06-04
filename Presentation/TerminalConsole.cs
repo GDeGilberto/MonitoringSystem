@@ -106,15 +106,14 @@ namespace Presentation
 
                         foreach (var tank in result.Tanks)
                         {
-                            ProcInventarioEntity inventario = new()
-                            {
-                                IdEstacion = _idEstacion,
-                                NoTanque = tank.NoTank,
-                                ClaveProducto = "",
-                                VolumenDisponible = tank.TankData.Volume,
-                                Temperatura = tank.TankData.Temperature,
-                                Fecha = DateTime.Now
-                            };
+                            InventarioEntity inventario = new(
+                                _idEstacion,
+                                tank.NoTank,
+                                "",
+                                tank.TankData.Volume,
+                                tank.TankData.Temperature,
+                                DateTime.Now
+                            );
 
                             try
                             {
