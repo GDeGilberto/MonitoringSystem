@@ -19,7 +19,7 @@ namespace Infrastructure.Repositories
             var tanque = await _dbContext.CatTanques
                 .FirstOrDefaultAsync(t =>
                     t.IdEstacion == entity.IdEstacion &&
-                    t.NoTanque == /*(entity.NoTanque < 10 ? $"0{entity.NoTanque}" :*/ entity.NoTanque.ToString());
+                    t.NoTanque == (entity.NoTanque < 10 ? $"0{entity.NoTanque}" : entity.NoTanque.ToString()));
 
             if (tanque == null)
             {
@@ -34,7 +34,9 @@ namespace Infrastructure.Repositories
             var inventoryModel = new ProcInventarioModel
             {
                 Idestacion = entity.IdEstacion,
-                NoTanque =  entity.NoTanque.ToString(),
+                NoTanque = entity.NoTanque < 10 
+                    ? $"0{entity.NoTanque}" 
+                    : entity.NoTanque.ToString(),
                 ClaveProducto = tanque.Producto,
                 VolumenDisponible = entity.VolumenDisponible,
                 Temperatura = entity.Temperatura,
