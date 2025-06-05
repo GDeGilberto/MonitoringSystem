@@ -54,30 +54,28 @@ namespace Infrastructure.Repositories
 
         public async Task<EstacionesEntity> GetByIdAsync(int id)
         {
-            var e = await _dbContext.CatEstaciones
+            var estacionesModel = await _dbContext.CatEstaciones
                 .Include(e => e.CatTanques)
                 .FirstOrDefaultAsync(e => e.IdEstacion == id);
 
-            if (e == null) return null;
-
             return new EstacionesEntity(
-                e.IdEstacion,
-                e.Nombre,
-                e.Direccion,
-                e.Telefono,
-                e.NomContacto,
-                e.CorreoElectronico,
-                e.Activa,
-                e.UltimoEnvio,
-                e.EnvioCorreo,
-                e.DistUbicacion,
-                e.TipoCliente,
-                e.Idcliente,
-                e.Atiende,
-                e.IdZonaPrecio,
-                e.UltimaActualizacionAnalisis,
-                e.IdEstacionAutoabasto,
-                e.CatTanques.Select(t => new TanquesEntity(
+                estacionesModel.IdEstacion,
+                estacionesModel.Nombre,
+                estacionesModel.Direccion,
+                estacionesModel.Telefono,
+                estacionesModel.NomContacto,
+                estacionesModel.CorreoElectronico,
+                estacionesModel.Activa,
+                estacionesModel.UltimoEnvio,
+                estacionesModel.EnvioCorreo,
+                estacionesModel.DistUbicacion,
+                estacionesModel.TipoCliente,
+                estacionesModel.Idcliente,
+                estacionesModel.Atiende,
+                estacionesModel.IdZonaPrecio,
+                estacionesModel.UltimaActualizacionAnalisis,
+                estacionesModel.IdEstacionAutoabasto,
+                estacionesModel.CatTanques.Select(t => new TanquesEntity(
                     t.IdEstacion,
                     t.NoTanque,
                     t.Producto,
