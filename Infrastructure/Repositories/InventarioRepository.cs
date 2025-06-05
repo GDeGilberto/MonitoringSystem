@@ -3,23 +3,23 @@ using Domain.Entities;
 using Infrastructure.Data;
 using Infrastructure.Models;
 using Microsoft.EntityFrameworkCore;
+using System.Linq.Expressions;
 
 namespace Infrastructure.Repositories
 {
-    public class InventarioRepository : IRepository<InventarioEntity>
+    public class InventarioRepository : IRepository<InventarioEntity>, IRepositorySearch<ProcInventarioModel, InventarioEntity>
     {
         private readonly AppDbContext _dbContext;
 
         public InventarioRepository(AppDbContext dbContext)
-        {
-            _dbContext = dbContext;
-        }
+            => _dbContext = dbContext;
+
         public async Task AddAsync(InventarioEntity entity)
         {
             var tanque = await _dbContext.CatTanques
                 .FirstOrDefaultAsync(t =>
                     t.IdEstacion == entity.IdEstacion &&
-                    t.NoTanque == (entity.NoTanque < 10 ? $"0{entity.NoTanque}" : entity.NoTanque.ToString()));
+                    t.NoTanque == /*(entity.NoTanque < 10 ? $"0{entity.NoTanque}" :*/ entity.NoTanque.ToString());
 
             if (tanque == null)
             {
@@ -34,9 +34,7 @@ namespace Infrastructure.Repositories
             var inventoryModel = new ProcInventarioModel
             {
                 Idestacion = entity.IdEstacion,
-                NoTanque = entity.NoTanque < 10
-                        ? $"0{entity.NoTanque}"
-                        : entity.NoTanque.ToString(),
+                NoTanque =  entity.NoTanque.ToString(),
                 ClaveProducto = tanque.Producto,
                 VolumenDisponible = entity.VolumenDisponible,
                 Temperatura = entity.Temperatura,
@@ -69,6 +67,28 @@ namespace Infrastructure.Repositories
                 inventario.Temperatura,
                 inventario.Fecha
             );
+        }
+
+        public async Task<IEnumerable<InventarioEntity>> GetAsync(Expression<Func<ProcInventarioModel, bool>> predicate)
+        {
+            var query = from i in _dbContext.ProcInventarios.Where(predicate)
+                        join maxFechas in
+                            (
+                                from x in _dbContext.ProcInventarios.Where(predicate)
+                                group x by x.NoTanque into g
+                                select new { NoTanque = g.Key, Fecha = g.Max(x => x.Fecha) }
+                            )
+                            on new { i.NoTanque, i.Fecha } equals new { maxFechas.NoTanque, Fecha = maxFechas.Fecha }
+                        select new InventarioEntity(
+                            i.Idestacion,
+                            string.IsNullOrEmpty(i.NoTanque) ? null : int.Parse(i.NoTanque),
+                            i.ClaveProducto,
+                            i.VolumenDisponible,
+                            i.Temperatura,
+                            i.Fecha
+                        );
+
+            return await query.ToListAsync();
         }
     }
 }

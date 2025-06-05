@@ -42,6 +42,7 @@ builder.Services.AddScoped<IRepository<DescargasEntity>, DescargasRepository>();
 builder.Services.AddScoped<IRepository<InventarioEntity>, InventarioRepository>();
 builder.Services.AddScoped<IRepository<DescargasEntity>, DescargasRepository>();
 builder.Services.AddScoped<IRepositorySearch<ProcDescargaModel, DescargasEntity>, DescargasRepository>();
+builder.Services.AddScoped<IRepositorySearch<ProcInventarioModel, InventarioEntity>, InventarioRepository>();
 builder.Services.AddScoped<IMapper<DescargaRequestDTO, DescargasEntity>, DescargaMapper>();
 builder.Services.AddScoped<IMapper<InventarioRequestDTO, InventarioEntity>, InventarioMapper>();
 builder.Services.AddScoped<IPresenter<InventarioEntity, InventarioViewModel>, InventarioPresenter>();
@@ -54,6 +55,7 @@ builder.Services.AddScoped<GetDescargaByIdUseCase>();
 builder.Services.AddScoped<GetDescargaSearchUseCase<ProcDescargaModel>>();
 builder.Services.AddScoped<GetInventariosUseCase>();
 builder.Services.AddScoped<GetInventarioByIdUseCase>();
+builder.Services.AddScoped<GetLatestInventarioByStationUseCase<ProcInventarioModel>>();
 builder.Services.AddScoped<ParceDeliveryReport>();
 builder.Services.AddScoped<InventarioService<InventarioEntity, InventarioViewModel>>();
 builder.Services.AddScoped<InventarioJob>();
@@ -83,6 +85,14 @@ RecurringJob.AddOrUpdate<DescargasJobs>(
     Cron.Daily(6)); // 6:00 AM daily
 
 app.MapControllers();
+
+app.MapGet("/inventarios/{idEstacion}", async (
+    GetLatestInventarioByStationUseCase<ProcInventarioModel> getInventariosUseCase,
+    int idEstacion) =>
+{
+    var result = await getInventariosUseCase.ExecuteAsync(s => s.Idestacion == idEstacion);
+    return Results.Ok(result);
+}).WithName("GetInventariosByIdEstacion");
 
 app.MapGet("/inventarios{id}", async (GetInventarioByIdUseCase getInventarioUseCase,
     int id) =>

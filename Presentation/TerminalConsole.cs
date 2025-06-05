@@ -145,18 +145,17 @@ namespace Presentation
                             var volumenInicial = tank.Deliveries.FirstOrDefault()?.Start.Volume ?? 0;
                             var volumenDisponible = tank.Deliveries.FirstOrDefault()?.End.Volume ?? 0;
 
-                            DescargasEntity descarga = new()
-                            {
-                                IdEstacion = _idEstacion,
-                                NoTanque = tank.NoTank,
-                                VolumenInicial = volumenInicial,
-                                TemperaturaInicial = tank.Deliveries.FirstOrDefault()?.Start.Temperature ?? 0,
-                                FechaInicial = tank.Deliveries.FirstOrDefault().Start.Date,
-                                VolumenDisponible = volumenDisponible,
-                                TemperaturaFinal = tank.Deliveries.FirstOrDefault()?.End.Temperature ?? 0,
-                                FechaFinal = tank.Deliveries.FirstOrDefault().End.Date,
-                                CantidadCargada = volumenDisponible - volumenInicial
-                            };
+                            DescargasEntity descarga = new(
+                                _idEstacion,
+                                tank.NoTank,
+                                volumenInicial,
+                                tank.Deliveries.FirstOrDefault()?.Start.Temperature ?? 0,
+                                tank.Deliveries.FirstOrDefault().Start.Date,
+                                volumenDisponible,
+                                tank.Deliveries.FirstOrDefault()?.End.Temperature ?? 0,
+                                tank.Deliveries.FirstOrDefault().End.Date,
+                                volumenDisponible - volumenInicial
+                            );
                             
                             try
                             {
