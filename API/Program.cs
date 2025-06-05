@@ -39,6 +39,7 @@ builder.Services.AddSingleton<ISerialPortService, SerialPortService>();
 builder.Services.AddSingleton<ISerialPortService, SerialPortManager>();
 
 builder.Services.AddScoped<IRepository<DescargasEntity>, DescargasRepository>();
+builder.Services.AddScoped<IRepository<EstacionesEntity>, EstacionesRepository>();
 builder.Services.AddScoped<IRepository<InventarioEntity>, InventarioRepository>();
 builder.Services.AddScoped<IRepository<DescargasEntity>, DescargasRepository>();
 builder.Services.AddScoped<IRepositorySearch<ProcDescargaModel, DescargasEntity>, DescargasRepository>();
@@ -53,6 +54,8 @@ builder.Services.AddScoped<CreateInventarioUseCase<InventarioRequestDTO>>();
 builder.Services.AddScoped<GetDescargasUseCase>();
 builder.Services.AddScoped<GetDescargaByIdUseCase>();
 builder.Services.AddScoped<GetDescargaSearchUseCase<ProcDescargaModel>>();
+builder.Services.AddScoped<GetEstacionesUseCase>();
+builder.Services.AddScoped<GetEstacionesByIdUseCase>();   
 builder.Services.AddScoped<GetInventariosUseCase>();
 builder.Services.AddScoped<GetInventarioByIdUseCase>();
 builder.Services.AddScoped<GetLatestInventarioByStationUseCase<ProcInventarioModel>>();
@@ -134,6 +137,19 @@ app.MapPost("/descargas", async (DescargaRequestDTO descargaRequest,
     await descargasUseCase.ExecuteAsync(descargaRequest);
     return Results.Created();
 }).WithName("AddDescarga");
+
+app.MapGet("/estaciones", async (GetEstacionesUseCase useCase) =>
+{
+    var result = await useCase.ExecuteAsync();
+    return Results.Ok(result);
+}).WithName("GetEstaciones");
+
+app.MapGet("/estaciones/{id}", async (GetEstacionesByIdUseCase useCase, 
+    int id) =>
+{
+    var result = await useCase.ExecuteAsync(id);
+    return result != null ? Results.Ok(result) : Results.NotFound();
+}).WithName("GetEstacionById");
 
 
 app.Run();

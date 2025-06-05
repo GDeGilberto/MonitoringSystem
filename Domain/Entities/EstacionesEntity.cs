@@ -35,4 +35,43 @@ public class EstacionesEntity
     public int? IdEstacionAutoabasto { get; }
 
     public List<TanquesEntity>? Tanques { get; }
+
+    public EstacionesEntity(
+        int id,
+        string? nombre,
+        string? direccion,
+        string? telefono,
+        string? nomContacto,
+        string? correoElectronico,
+        string? activa,
+        DateTime? ultimoEnvio,
+        DateTime? envioCorreo,
+        string? distUbicacion,
+        string? tipoCliente,
+        int? idCliente,
+        string? atiende,
+        int? idZonaPrecio,
+        DateTime? ultimaActualizacionAnalisis,
+        int? idEstacionAutoabasto,
+        List<TanquesEntity>? tanques
+    )
+    {
+        Id = id;
+        Nombre = nombre;
+        Direccion = direccion;
+        Telefono = telefono;
+        NomContacto = nomContacto;
+        CorreoElectronico = correoElectronico;
+        Activa = activa;
+        UltimoEnvio = ultimoEnvio;
+        EnvioCorreo = envioCorreo;
+        DistUbicacion = distUbicacion;
+        TipoCliente = tipoCliente;
+        IdCliente = idCliente;
+        Atiende = atiende;
+        IdZonaPrecio = idZonaPrecio;
+        UltimaActualizacionAnalisis = ultimaActualizacionAnalisis;
+        IdEstacionAutoabasto = idEstacionAutoabasto;
+        Tanques = tanques;
+    }
 }

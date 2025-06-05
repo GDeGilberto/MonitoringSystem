@@ -16,5 +16,22 @@ public class TanquesEntity
 
     public List<InventarioEntity>? Inventarios { get; }
 
-    public virtual EstacionesEntity? Estaciones { get; }
+    public TanquesEntity(
+        int idEstacion,
+        string? noTanque,
+        string? producto,
+        decimal? fondeja,
+        decimal? capacidad,
+        decimal? capacidad95,
+        List<InventarioEntity>? inventarios
+    )
+    {
+        IdEstacion = idEstacion;
+        NoTanque = noTanque;
+        Producto = producto;
+        Fondeja = fondeja;
+        Capacidad = capacidad;
+        Capacidad95 = capacidad95;
+        Inventarios = inventarios;
+    }
 }
