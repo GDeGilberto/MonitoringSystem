@@ -1,28 +1,49 @@
-﻿<div class="card shadow">
-    <div class="card-body">
+﻿@if (IsLoading)
+{
+    <div class="card shadow" aria-hidden="true">
+        <div class="card-body">
+            <h3 class="card-title placeholder-glow">
+                <span class="placeholder col-7"></span>
+            </h3>
 
-        <h3>Productos</h3>
+            <p class="card-text placeholder-glow">
+                <span class="placeholder col-4"></span>
+                <span class="placeholder col-6"></span>
+                <span class="placeholder col-4"></span>
+                <span class="placeholder col-6"></span>
+                <span class="placeholder col-4"></span>
+                <span class="placeholder col-6"></span>
+            </p>
+        </div>
+    </div>
+}
+else
+{
+    <div class="card shadow">
+        <div class="card-body">
+            <h3 class="card-title">Productos</h3>
 
-        <table class="table">
-            <tbody>
-                @if (Productos != null && Productos.Any())
-                {
-                    @foreach (var producto in Productos)
+            <table class="table">
+                <tbody>
+                    @if (Productos != null && Productos.Any())
                     {
-                        <tr scope="row">
-                            <td>@producto.Nombre</td>
-                            <td class="text-end">@FormatearDecimal(producto.Cantidad)</td>
+                        @foreach (var producto in Productos)
+                        {
+                            <tr scope="row">
+                                <td>@producto.Nombre</td>
+                                <td class="text-end">@FormatearDecimal(producto.Cantidad)</td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="2">No hay productos disponibles.</td>
                         </tr>
                     }
-                }
-                else
-                {
-                    <tr>
-                        <td colspan="2">No hay productos disponibles.</td>
-                    </tr>
-                }
-            </tbody>
-        </table>
-        
+                </tbody>
+            </table>
+
+        </div>
     </div>
-</div>
+}
