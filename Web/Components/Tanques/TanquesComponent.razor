@@ -1,0 +1,37 @@
+﻿<div class="card shadow bg-body-tertiary">
+    <div class="card-body">
+        <h3>Tanques</h3>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th scope="col">#</th>
+                    <th scope="col">Producto</th>
+                    <th scope="col">Volumen</th>
+                    <th scope="col">Capacidad</th>
+                    <th scope="col">Temp</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Tanques != null && Tanques.Any())
+                {
+                    foreach (var tanque in Tanques)
+                    {
+                        <tr>
+                            <td scope="row">@tanque.NoTanque</td>
+                            <td>@tanque.Producto</td>
+                            <td>@FormatearDecimal(tanque.Volumen)</td>
+                            <td>@FormatearDecimal(tanque.Capacidad)</td>
+                            <td>@FormatearDecimal(tanque.Temperatura)</td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="5">No hay tanques disponibles.</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
