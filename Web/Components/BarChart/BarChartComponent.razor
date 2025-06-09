@@ -1,0 +1,21 @@
+﻿@using System.Text.Json
+<div class="card shadow">
+    <div class="card-body">
+        <h3>Niveles en tanques</h3>
+
+        <div>
+            <canvas id="myChart"></canvas>
+        </div>
+    </div>
+</div>
+
+<script src="/js/barChart.js"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        HandleBarChart(
+            "myChart",
+            JSON.parse('@JsonSerializer.Serialize(labels)'),
+            JSON.parse('@JsonSerializer.Serialize(data)')
+        );
+    });
+</script>
