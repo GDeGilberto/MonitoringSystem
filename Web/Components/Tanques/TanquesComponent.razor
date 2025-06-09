@@ -1,37 +1,69 @@
-﻿<div class="card shadow bg-body-tertiary">
-    <div class="card-body">
-        <h3>Tanques</h3>
-        <table class="table table-striped">
-            <thead>
-                <tr>
-                    <th scope="col">#</th>
-                    <th scope="col">Producto</th>
-                    <th scope="col">Volumen</th>
-                    <th scope="col">Capacidad</th>
-                    <th scope="col">Temp</th>
-                </tr>
-            </thead>
-            <tbody>
-                @if (Tanques != null && Tanques.Any())
-                {
-                    foreach (var tanque in Tanques)
+﻿@if (IsLoading)
+{
+    <div class="card shadow bg-body-tertiary" aria-hidden="true">
+        <div class="card-body">
+            <h3 class="card-title placeholder-glow"><span class="placeholder col-2"></span></h3>
+            <table class="table table-striped">
+                <thead>
+                    <tr class="placeholder-glow">
+                        <th scope="col"><span class="placeholder col-3"></span></th>
+                        <th scope="col"><span class="placeholder col-6"></span></th>
+                        <th scope="col"><span class="placeholder col-6"></span></th>
+                        <th scope="col"><span class="placeholder col-6"></span></th>
+                        <th scope="col"><span class="placeholder col-6"></span></th>
+                    </tr>
+                </thead>
+                
+                <tbody>
+                    <tr class="placeholder-glow">
+                        <td scope="col"><span class="placeholder col-3"></span></td>
+                        <td scope="col"><span class="placeholder col-6"></span></td>
+                        <td scope="col"><span class="placeholder col-6"></span></td>
+                        <td scope="col"><span class="placeholder col-6"></span></td>
+                        <td scope="col"><span class="placeholder col-6"></span></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+}
+else
+{
+    <div class="card shadow bg-body-tertiary">
+        <div class="card-body">
+            <h3>Tanques</h3>
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th scope="col">#</th>
+                        <th scope="col">Producto</th>
+                        <th scope="col">Volumen</th>
+                        <th scope="col">Capacidad</th>
+                        <th scope="col">Temp</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Tanques != null && Tanques.Any())
+                    {
+                        foreach (var tanque in Tanques)
+                        {
+                            <tr>
+                                <td scope="row">@tanque.NoTanque</td>
+                                <td>@tanque.Producto</td>
+                                <td>@FormatearDecimal(tanque.Volumen)</td>
+                                <td>@FormatearDecimal(tanque.Capacidad)</td>
+                                <td>@FormatearDecimal(tanque.Temperatura)</td>
+                            </tr>
+                        }
+                    }
+                    else
                     {
                         <tr>
-                            <td scope="row">@tanque.NoTanque</td>
-                            <td>@tanque.Producto</td>
-                            <td>@FormatearDecimal(tanque.Volumen)</td>
-                            <td>@FormatearDecimal(tanque.Capacidad)</td>
-                            <td>@FormatearDecimal(tanque.Temperatura)</td>
+                            <td colspan="5">No hay tanques disponibles.</td>
                         </tr>
                     }
-                }
-                else
-                {
-                    <tr>
-                        <td colspan="5">No hay tanques disponibles.</td>
-                    </tr>
-                }
-            </tbody>
-        </table>
+                </tbody>
+            </table>
+        </div>
     </div>
-</div>
+}

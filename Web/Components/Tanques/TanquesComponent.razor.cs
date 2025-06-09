@@ -12,6 +12,9 @@ namespace Web.Components.Tanques
         [Parameter]
         public List<TanqueViewModel>? Tanques { get; set; }
 
+        [Parameter]
+        public bool IsLoading { get; set; }
+
         private string FormatearDecimal(decimal? valor)
             => valor.HasValue ? valor.Value.ToString("N2") : "-";
     }
