@@ -1,0 +1,32 @@
+﻿@page "/dashboard"
+@using Infrastructure.Models
+@using Web.Components.Estacion
+@using Web.Components.Productos
+@using Web.Components.Tanques
+@using Web.Components.BarChart
+@inject Application.UseCases.GetEstacionesByIdUseCase GetEstacionesByIdUseCase
+@inject Application.UseCases.GetLatestInventarioByStationUseCase<ProcInventarioModel> GetInventarioUseCase
+@inject IConfiguration Configuration
+
+<nav style="--bs-breadcrumb-divider: '>';" aria-label="breadcrumb">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="#">Tanques</a></li>
+    <li class="breadcrumb-item active" aria-current="page">Dashboard</li>
+  </ol>
+</nav>
+
+<div class="container">
+    <div class="row row-gap-sm-3">
+        <div class="col-lg-3 col-md-4 d-flex flex-column gap-3">
+            <EstacionComponent Estacion="EstacionViewModel" IsLoading="IsLoading" />
+            <ProductosComponent Productos="ListProductos" IsLoading="IsLoading" />
+        </div>
+        <div class="col-lg-9 col-md-8 d-flex flex-column gap-3">
+            <BarChartComponent Tanques="ListTanques" />
+            <TanquesComponent Tanques="ListTanques" IsLoading="IsLoading" />
+        </div>
+    </div>
+</div>
+
+
+
