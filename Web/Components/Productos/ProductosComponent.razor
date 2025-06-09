@@ -1,0 +1,28 @@
+﻿<div class="card shadow">
+    <div class="card-body">
+
+        <h3>Productos</h3>
+
+        <table class="table">
+            <tbody>
+                @if (Productos != null && Productos.Any())
+                {
+                    @foreach (var producto in Productos)
+                    {
+                        <tr scope="row">
+                            <td>@producto.Nombre</td>
+                            <td class="text-end">@FormatearDecimal(producto.Cantidad)</td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="2">No hay productos disponibles.</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+        
+    </div>
+</div>
