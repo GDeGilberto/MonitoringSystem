@@ -1,0 +1,14 @@
+﻿<div class="card shadow">
+    <div class="card-body">
+        <h3>Estación</h3>
+        @if (Estacion != null)
+        {
+            <p><strong>ID:</strong> @Estacion.Id</p>
+            <p><strong>Nombre:</strong> @Estacion.Nombre</p>
+        }
+        else
+        {
+            <p>Cargando...</p>
+        }
+    </div>
+</div>
