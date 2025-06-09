@@ -7,5 +7,9 @@ namespace Web.Components.Estacion
     {
         [Parameter]
         public EstacionViewModel Estacion { get; set; }
+
+        [Parameter]
+        public bool IsLoading { get; set; }
+
     }
 }
