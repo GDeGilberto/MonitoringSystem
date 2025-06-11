@@ -1,8 +1,5 @@
-﻿
-HandleBarChart = (canvasId,labels, data) => {
-
+﻿HandleBarChart = (canvasId, labels, data) => {
     const ctx = document.getElementById(canvasId);
-    let delayed;
 
     // Mapeo de producto a color
     const colorMap = {
@@ -11,7 +8,6 @@ HandleBarChart = (canvasId,labels, data) => {
         'Diesel': { border: '#FFA953', background: '#FFCF9F' }
     };
 
-    // Función para obtener color según el label
     function getColor(label) {
         if (label.includes('Premium')) return colorMap['Premium'];
         if (label.includes('Magna')) return colorMap['Magna'];
@@ -19,17 +15,16 @@ HandleBarChart = (canvasId,labels, data) => {
         const borderColor = stringToColor(label);
         return {
             border: borderColor,
-            background: borderColor.replace(')', ', 0.5)').replace('hsl', 'hsla') // Transparencia 0.5
+            background: borderColor.replace(')', ', 0.5)').replace('hsl', 'hsla')
         }
     }
 
-    // Función para generar un color HEX basado en un string (hash simple)
     function stringToColor(str) {
         let hash = 0;
         for (let i = 0; i < str.length; i++) {
             hash = str.charCodeAt(i) + ((hash << 5) - hash);
         }
-        const color = `hsl(${hash % 360}, 70%, 60%)`; // Usa HSL para colores vivos
+        const color = `hsl(${hash % 360}, 70%, 60%)`;
         return color;
     }
 
@@ -46,7 +41,6 @@ HandleBarChart = (canvasId,labels, data) => {
         };
     });
 
-
     new Chart(ctx, {
         type: 'bar',
         data: {
@@ -55,18 +49,19 @@ HandleBarChart = (canvasId,labels, data) => {
         },
         options: {
             animation: {
-                onComplete: () => {
-                    delayed = true;
-                },
-                delay: (context) => {
-                    let delay = 0;
-                    if (context.type === 'data' && context.mode === 'default' && !delayed) {
-                        delay = context.dataIndex * 30000 + context.datasetIndex * 1000;
-                    }
-                    return delay;
-                },
+                duration: 1500,
+                easing: 'easeOutQuart',
+                delay: (context) => context.datasetIndex * 200
             },
-            responsive: true
+            responsive: true,
+            responsiveAnimationDuration: 0,
+            transitions: {
+                active: {
+                    animation: {
+                        duration: 1500
+                    }
+                }
+            }
         },
     });
 }
