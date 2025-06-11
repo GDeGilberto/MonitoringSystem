@@ -1,5 +1,6 @@
 using Application.Interfaces;
 using Application.UseCases;
+using BlazorDateRangePicker;
 using Domain.Entities;
 using Infrastructure.Data;
 using Infrastructure.Models;
@@ -13,8 +14,19 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+
+builder.Services.AddDateRangePicker(config =>
+{
+    config.Attributes = new Dictionary<string, object>
+    {
+        {"class","form-control form-control-sm" }
+    };
+});
+
+builder.Services.AddScoped<IRepositorySearch<ProcDescargaModel, DescargasEntity>, DescargasRepository>();
 builder.Services.AddScoped<IRepository<EstacionesEntity>, EstacionesRepository>();
 builder.Services.AddScoped<IRepository<InventarioEntity>, InventarioRepository>();
+builder.Services.AddScoped<GetDescargaSearchUseCase<ProcDescargaModel>>();
 builder.Services.AddScoped<GetLatestInventarioByStationUseCase<ProcInventarioModel>>();
 builder.Services.AddScoped<GetEstacionesByIdUseCase>();
 
@@ -24,6 +36,7 @@ builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
 var app = builder.Build();
+
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())

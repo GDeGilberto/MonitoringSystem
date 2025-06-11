@@ -7,11 +7,18 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Infrastructure\Infrastructure.csproj" />
+    <Compile Remove="wwwroot\Imgs\**" />
+    <Content Remove="wwwroot\Imgs\**" />
+    <EmbeddedResource Remove="wwwroot\Imgs\**" />
+    <None Remove="wwwroot\Imgs\**" />
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="wwwroot\Imgs\" />
+    <PackageReference Include="BlazorDateRangePicker" Version="6.1.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Infrastructure\Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>

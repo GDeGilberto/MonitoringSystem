@@ -9,13 +9,17 @@
     <link rel="stylesheet" href="app.css" />
     <link rel="stylesheet" href="Web.styles.css" />
     <link rel="icon" type="image/png" href="favicon.png" />
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <HeadOutlet />
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <HeadOutlet @rendermode="InteractiveServer" />
 </head>
 
 <body>
-    <Routes />
+    <Routes @rendermode="InteractiveServer" />
     <script src="_framework/blazor.web.js"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </body>
 
 </html>
+
