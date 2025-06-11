@@ -1,0 +1,68 @@
+﻿@page "/recargas"
+@using Web.Components.Table
+@using BlazorDateRangePicker
+
+<PageTitle>Recargas</PageTitle>
+
+<nav style="--bs-breadcrumb-divider: '>';" aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="#">Tanques</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Recargas</li>
+    </ol>
+</nav>
+
+<TableComponent Titles="titles" Data="data" IsLoading="isLoadingTable">
+    <FilterTemplate>
+        <div class="row">
+            <div class="col-lg-auto col-sm-12">
+                <DateRangePicker @bind-StartDate="startDate" @bind-EndDate="endDate">
+                    <ButtonsTemplate>
+                        <div class="d-flex">
+                            <button class="cancelBtn btn btn-sm btn-outline-danger me-auto"
+                                    @onclick="@context.ClickCancel" type="button">
+                                Cerrar
+                            </button>
+                            <button class="btn btn-sm btn-outline-primary"
+                                    @onclick="@(e => SetToday(context))" type="button">
+                                Hoy
+                            </button>
+                            <button class="btn btn-sm btn-outline-primary"
+                                    @onclick="@(e => resetDays(context))" type="button">
+                                Todos
+                            </button>
+                            <button class="applyBtn btn btn-sm btn-primary ms-2"
+                                    @onclick="@context.ClickApply"
+                                    disabled="@(context.TStartDate == null || context.TEndDate == null)"
+                                    type="button">
+                                Aplicar
+                            </button>
+                        </div>
+                    </ButtonsTemplate>
+                    <PickerTemplate>
+                        <div id="@context.ParentId" @onclick="context.Toggle"
+                             class="form-control d-flex align-items-center gap-2 pointer-event">
+                            <i class="bi bi-calendar-range-fill"></i>
+                            <span class="flex-grow-1 text-center">
+                                @context.FormattedRange @(string.IsNullOrEmpty(context.FormattedRange) ? "Fecha" : "")
+                            </span>
+                            <i class="bi bi-chevron-down"></i>
+                        </div>
+                    </PickerTemplate>
+                </DateRangePicker>
+            </div>
+            <div class="col-lg-auto col-sm-12">
+                <select class="form-select text-center" @bind="selectedOption" required>
+                    <option selected disabled value="0">No. Tanque</option>
+                    <option value="0">Todos</option>
+                    @foreach (var tank in TankNumbers)
+                    {
+                        <option value="@tank">@tank</option>
+                    }
+                </select>
+            </div>
+            <div class="col-lg-auto col-sm-12">
+                <button class="btn btn-primary" @onclick="ClickFilterData">Filtrar</button>
+            </div>
+        </div>
+    </FilterTemplate>
+</TableComponent>
