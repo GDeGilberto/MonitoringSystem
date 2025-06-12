@@ -1,13 +1,29 @@
 ﻿@inherits LayoutComponentBase
 
 <div class="page">
-    <div class="sidebar">
-        <NavMenu />
+    <div class="sidebar @(isMenuVisible ? "show" : "")">
+        <NavMenu>
+            <buttonClose>
+                <button @onclick="HandleMenuToggle" class="btn-close bg-light"></button>
+            </buttonClose>
+        </NavMenu>
     </div>
 
     <main>
         <div class="top-row px-4">
-            <a href="https://learn.microsoft.com/aspnet/core/" target="_blank">About</a>
+            <div class="d-flex align-items-center">
+                @if (!isMenuVisible)
+                {
+                    <button class="btn btn-link menu-toggle fade @(!isMenuVisible ? "show" : "")" type="button" @onclick="HandleMenuToggle">
+                        <i class="bi bi-list"></i>
+                    </button>
+                }
+                <div class="company-brand">
+                    <img src="imgs/isotipo.jpg" alt="Isotipo de dagal" class="company-logo" />
+                    <span class="@(isMenuVisible ? "d-none" : "")">Dagal</span>
+                </div>
+            </div>
+            <a href="" target="_blank">usuario</a>
         </div>
 
         <article class="content px-4">
@@ -21,3 +37,13 @@
     <a href="" class="reload">Reload</a>
     <a class="dismiss">🗙</a>
 </div>
+
+@code {
+    private bool isMenuVisible = true;
+
+    private void HandleMenuToggle()
+    {
+        isMenuVisible = !isMenuVisible;
+
+    }
+}

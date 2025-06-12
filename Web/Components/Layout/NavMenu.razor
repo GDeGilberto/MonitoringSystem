@@ -1,6 +1,7 @@
 ﻿<div class="top-row ps-3 navbar navbar-dark">
     <div class="container-fluid">
         <a class="navbar-brand" href="">Web</a>
+        @buttonClose
     </div>
 </div>
 
@@ -28,3 +29,6 @@
     </nav>
 </div>
 
+@code{
+    [Parameter] public RenderFragment? buttonClose { get; set; }
+}
