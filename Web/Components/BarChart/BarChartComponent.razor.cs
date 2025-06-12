@@ -6,32 +6,31 @@ namespace Web.Components.BarChart
 {
     public partial class BarChartComponent : ComponentBase
     {
-        [Inject]
-        private IJSRuntime JSRuntime { get; set; }
-        [Parameter]
-        public List<TanqueViewModel>? Tanques { get; set; }
+        [Inject] private IJSRuntime JS { get; set; }
+        [Parameter] public List<TanqueViewModel>? Tanques { get; set; }
 
-        private IEnumerable<string>? labels;
-        private decimal[]? data;
-        private bool datosActualizados = false;
+        private string[]? _labels;
+        private decimal[]? _data;
 
         protected override void OnParametersSet()
         {
-            if (Tanques != null && Tanques.Any())
+            if (Tanques?.Any() == true)
             {
-                labels = Tanques.Select(t => $"{t.NoTanque.ToString()} - {t.Producto}");
-                data = Tanques.Select(t => t.Volumen ?? 0).ToArray();
-                datosActualizados = true;
+                _labels = Tanques.Select(t => $"{t.NoTanque.ToString()} - {t.Producto}").ToArray();
+                _data = Tanques.Select(t => t.Volumen ?? 0).ToArray();
             }
         }
 
         protected override async Task OnAfterRenderAsync(bool firstRender)
         {
-            if (datosActualizados && labels != null && data != null)
+            if ( _labels != null && _data != null)
             {
-                datosActualizados = false;
-                await JSRuntime.InvokeVoidAsync("HandleBarChart", "myChart", labels, data);
+                await JS.InvokeVoidAsync("UpdateChart", "myChart", _labels, _data);
             }
         }
+
+        public async ValueTask DisposeAsync() =>
+            await JS.InvokeVoidAsync("DestroyChart");
+
     }
 }

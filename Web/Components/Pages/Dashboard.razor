@@ -4,9 +4,7 @@
 @using Web.Components.Productos
 @using Web.Components.Tanques
 @using Web.Components.BarChart
-@inject Application.UseCases.GetEstacionesByIdUseCase GetEstacionesByIdUseCase
-@inject Application.UseCases.GetLatestInventarioByStationUseCase<ProcInventarioModel> GetInventarioUseCase
-@inject IConfiguration Configuration
+<PageTitle>Dashboard</PageTitle>
 
 <nav style="--bs-breadcrumb-divider: '>';" aria-label="breadcrumb">
   <ol class="breadcrumb">
@@ -18,12 +16,21 @@
 <div class="container">
     <div class="row row-gap-sm-3">
         <div class="col-lg-3 col-md-4 d-flex flex-column gap-3">
-            <EstacionComponent Estacion="EstacionViewModel" IsLoading="IsLoading" />
-            <ProductosComponent Productos="ListProductos" IsLoading="IsLoading" />
+            <EstacionComponent Estacion="EstacionViewModel" IsLoading="IsLoadingEstacion" />
+            <ProductosComponent Productos="ListProductos" IsLoading="IsLoadingProductos" />
         </div>
         <div class="col-lg-9 col-md-8 d-flex flex-column gap-3">
             <BarChartComponent Tanques="ListTanques" />
-            <TanquesComponent Tanques="ListTanques" IsLoading="IsLoading" />
+            <TanquesComponent Tanques="ListTanques" IsLoading="IsLoadingTanques">
+                <LabelUpdate>
+                    <div>
+                        <span>@dateUpdate</span>
+                        <button class="btn btn-outline-info" @onclick="UpdateInventory">
+                            <i class="bi bi-arrow-clockwise"></i>
+                        </button>
+                    </div>
+                </LabelUpdate>
+            </TanquesComponent>
         </div>
     </div>
 </div>

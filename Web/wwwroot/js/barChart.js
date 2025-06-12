@@ -1,4 +1,14 @@
-﻿HandleBarChart = (canvasId, labels, data) => {
+﻿let myChartInstance = null;
+
+function DestroyChart() {
+    if (myChartInstance) {
+        myChartInstance.destroy();
+        myChartInstance = null;
+    }
+}
+
+
+function UpdateChart(canvasId, labels, data) {
     const ctx = document.getElementById(canvasId);
 
     // Mapeo de producto a color
@@ -40,28 +50,34 @@
             borderSkipped: false,
         };
     });
-
-    new Chart(ctx, {
-        type: 'bar',
-        data: {
-            labels: ['Tanque'],
-            datasets: datasets
-        },
-        options: {
-            animation: {
-                duration: 1500,
-                easing: 'easeOutQuart',
-                delay: (context) => context.datasetIndex * 200
+    if (!myChartInstance) {
+        // Crear gráfico si no existe
+        myChartInstance = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ['Tanque'],
+                datasets
             },
-            responsive: true,
-            responsiveAnimationDuration: 0,
-            transitions: {
-                active: {
-                    animation: {
-                        duration: 1500
+            options: {
+                animation: {
+                    duration: 1500,
+                    easing: 'easeOutQuart',
+                    delay: (context) => context.datasetIndex * 200
+                },
+                responsive: true,
+                responsiveAnimationDuration: 0,
+                transitions: {
+                    active: {
+                        animation: {
+                            duration: 1500
+                        }
                     }
                 }
             }
-        },
-    });
+        });
+    } else {
+        // Actualizar datos si ya existe
+        myChartInstance.data.datasets = datasets;
+        myChartInstance.update();
+    }
 }
