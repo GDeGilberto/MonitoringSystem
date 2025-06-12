@@ -14,13 +14,13 @@
             <div class="d-flex align-items-center">
                 @if (!isMenuVisible)
                 {
-                    <button class="btn btn-link menu-toggle fade @(!isMenuVisible ? "show" : "")" type="button" @onclick="HandleMenuToggle">
+                    <button class="btn btn-outline-light menu-toggle fade @(!isMenuVisible ? "show" : "")" type="button" @onclick="HandleMenuToggle">
                         <i class="bi bi-list"></i>
                     </button>
                 }
                 <div class="company-brand">
                     <img src="imgs/isotipo.jpg" alt="Isotipo de dagal" class="company-logo" />
-                    <span class="@(isMenuVisible ? "d-none" : "")">Dagal</span>
+                    <span class="@(isMenuVisible ? "d-none" : "") font-monospace fs-3" style="font-family: Georgia, 'Times New Roman', Times, serif;">Dagal</span>
                 </div>
             </div>
             <a href="" target="_blank">usuario</a>
