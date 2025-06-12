@@ -15,6 +15,8 @@ namespace Web.Components.Tanques
         [Parameter]
         public bool IsLoading { get; set; }
 
+        [Parameter] public RenderFragment? LabelUpdate { get; set; }
+
         private string FormatearDecimal(decimal? valor)
             => valor.HasValue ? valor.Value.ToString("N2") : "-";
     }
