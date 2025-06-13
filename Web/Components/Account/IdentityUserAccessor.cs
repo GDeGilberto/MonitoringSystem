@@ -1,5 +1,5 @@
-using Web.Data;
 using Microsoft.AspNetCore.Identity;
+using Infrastructure.Data;
 
 namespace Web.Components.Account
 {
