@@ -1,11 +1,11 @@
 ﻿using Infrastructure.Models;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Data;
 
-public partial class AppDbContext : DbContext
+public partial class AppDbContext : IdentityDbContext<ApplicationUser>
 {
-
     public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
 
     public virtual DbSet<CatEstacionesModel> CatEstaciones { get; set; }
@@ -58,7 +58,12 @@ public partial class AppDbContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        base.OnModelCreating(modelBuilder);
+        
         modelBuilder.UseCollation("SQL_Latin1_General_CP1_CI_AS");
+
+        // Fix for the cursoAuth.Data.ApplicationUser reference in migration
+        modelBuilder.Entity<ApplicationUser>().ToTable("AspNetUsers");
 
         modelBuilder.Entity<CatEstacionesModel>(entity =>
         {
