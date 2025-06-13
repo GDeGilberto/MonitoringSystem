@@ -1,111 +1,38 @@
-using Application.Interfaces;
-using Application.Services;
-using Application.UseCases;
-using Domain.Entities;
-using Hangfire;
-using Infrastructure.Communication;
-using Infrastructure.Data;
-using Infrastructure.Dtos;
-using Infrastructure.Jobs;
-using Infrastructure.Mappers;
-using Infrastructure.Models;
-using Infrastructure.Presenters;
-using Infrastructure.Repositories;
-using Infrastructure.ViewModels;
+using API.Extensions;
 using API.Middleware;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.OpenApi.Models;
-using System.Reflection;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Add controllers and API explorer
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 
-// Configuring Swagger with XML documentation
-builder.Services.AddSwaggerGen(options =>
-{
-    options.SwaggerDoc("v1", new OpenApiInfo
-    {
-        Title = "Sistema de Monitoreo API",
-        Version = "v1",
-        Description = "API para el sistema de monitoreo de estaciones y tanques",
-        Contact = new OpenApiContact
-        {
-            Name = "Giblerto Alvarez",
-            Email = "gilbertoalvarez514@hotmail.com"
-        }
-    });
+// Add Swagger documentation
+builder.Services.AddSwaggerDocumentation();
 
-    // Set the comments path for the XmlComments file
-    var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
-    var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
-    
-    // Enable XML comments if the file exists
-    if (File.Exists(xmlPath))
-    {
-        options.IncludeXmlComments(xmlPath);
-    }
-    
-    // Add security definitions and requirements if needed
-    // options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme { ... });
-});
+// Add database context
+builder.Services.AddDatabaseContext(builder.Configuration);
 
-// Configuration EF
-builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+// Add Hangfire services
+builder.Services.AddHangfireServices(builder.Configuration);
 
-// Configuration Hangfire
-builder.Services.AddHangfire(configuration => configuration
-    .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
-    .UseSimpleAssemblyNameTypeSerializer()
-    .UseRecommendedSerializerSettings()
-    .UseSqlServerStorage(builder.Configuration.GetConnectionString("HangfireConnection")));
-builder.Services.AddHangfireServer();
+// Add serial port services
+builder.Services.AddSerialPortServices();
 
-// Configuración del servicio serial
-builder.Services.AddSingleton<ISerialPortService>(provider =>
-    new SerialPortService());
-builder.Services.AddSingleton<ISerialPortService, SerialPortService>();
-builder.Services.AddSingleton<ISerialPortService, SerialPortManager>();
-
-builder.Services.AddScoped<IRepository<DescargasEntity>, DescargasRepository>();
-builder.Services.AddScoped<IRepository<EstacionesEntity>, EstacionesRepository>();
-builder.Services.AddScoped<IRepository<InventarioEntity>, InventarioRepository>();
-builder.Services.AddScoped<IRepository<DescargasEntity>, DescargasRepository>();
-builder.Services.AddScoped<IRepositorySearch<ProcDescargaModel, DescargasEntity>, DescargasRepository>();
-builder.Services.AddScoped<IRepositorySearch<ProcInventarioModel, InventarioEntity>, InventarioRepository>();
-builder.Services.AddScoped<IMapper<DescargaRequestDTO, DescargasEntity>, DescargaMapper>();
-builder.Services.AddScoped<IMapper<InventarioRequestDTO, InventarioEntity>, InventarioMapper>();
-builder.Services.AddScoped<IPresenter<InventarioEntity, InventarioViewModel>, InventarioPresenter>();
-builder.Services.AddScoped<DescargasService<DescargasEntity>>();
-builder.Services.AddScoped<DescargasJobs>();
-builder.Services.AddScoped<CreateDescargasUseCase<DescargaRequestDTO>>();
-builder.Services.AddScoped<CreateInventarioUseCase<InventarioRequestDTO>>();
-builder.Services.AddScoped<GetDescargasUseCase>();
-builder.Services.AddScoped<GetDescargaByIdUseCase>();
-builder.Services.AddScoped<GetDescargaSearchUseCase<ProcDescargaModel>>();
-builder.Services.AddScoped<GetEstacionesUseCase>();
-builder.Services.AddScoped<GetEstacionesByIdUseCase>();   
-builder.Services.AddScoped<GetInventariosUseCase>();
-builder.Services.AddScoped<GetInventarioByIdUseCase>();
-builder.Services.AddScoped<GetLatestInventarioByStationUseCase<ProcInventarioModel>>();
-builder.Services.AddScoped<ParceDeliveryReport>();
-builder.Services.AddScoped<InventarioService<InventarioEntity, InventarioViewModel>>();
-builder.Services.AddScoped<InventarioJob>();
-builder.Services.AddScoped<ParseTankInventoryReport>();
+// Add repositories, mappers, services, use cases, and jobs
+builder.Services
+    .AddRepositories()
+    .AddMappers()
+    .AddServices()
+    .AddUseCases()
+    .AddJobs();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+// Configure the HTTP request pipeline
 if (app.Environment.IsDevelopment())
 {
-    app.UseSwagger();
-    app.UseSwaggerUI(c =>
-    {
-        c.SwaggerEndpoint("/swagger/v1/swagger.json", "Monitoring API v1");
-        //c.RoutePrefix = string.Empty; // Serve the Swagger UI at the app's root
-    });
+    app.UseSwaggerDocumentation();
 }
 
 // Add global exception handling middleware
@@ -114,16 +41,9 @@ app.UseGlobalExceptionHandling();
 app.UseHttpsRedirection();
 app.UseAuthorization();
 
-app.UseHangfireDashboard();
-
-RecurringJob.AddOrUpdate<InventarioJob>(
-    "job-volumenYTemperatura-de-tanques-3-minutos",
-    job => job.Execute(),
-    "*/3 * * * *"); // Every 3 minutes
-RecurringJob.AddOrUpdate<DescargasJobs>(
-    "job-Cargas-a-los-tanques",
-    job => job.Execute(),
-    Cron.Daily(6)); // 6:00 AM daily
+// Configure Hangfire dashboard and jobs
+app.UseHangfireDashboardWithSecurity();
+app.ConfigureRecurringJobs();
 
 app.MapControllers();
 
