@@ -3,7 +3,6 @@ using Application.UseCases;
 using Infrastructure.Dtos;
 using Infrastructure.Models;
 using Microsoft.AspNetCore.Mvc;
-using System.ComponentModel.DataAnnotations;
 
 namespace API.Controllers
 {

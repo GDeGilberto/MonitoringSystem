@@ -12,6 +12,7 @@ using Infrastructure.Models;
 using Infrastructure.Presenters;
 using Infrastructure.Repositories;
 using Infrastructure.ViewModels;
+using API.Middleware;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -72,6 +73,9 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
+// Add global exception handling middleware
+app.UseGlobalExceptionHandling();
 
 app.UseHttpsRedirection();
 app.UseAuthorization();

@@ -2,9 +2,8 @@ using Domain.Entities;
 using Application.UseCases;
 using Infrastructure.Dtos;
 using Infrastructure.Models;
+using Infrastructure.Repositories;
 using Microsoft.AspNetCore.Mvc;
-using System.Linq.Expressions;
-using System.Net;
 using System.ComponentModel.DataAnnotations;
 
 namespace API.Controllers
@@ -44,26 +43,18 @@ namespace API.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [ProducesResponseType(StatusCodes.Status503ServiceUnavailable)]
         public async Task<ActionResult<IEnumerable<DescargasEntity>>> Get()
         {
-            try
+            var result = await _getDescargasUseCase.ExecuteAsync();
+            
+            if (result == null || !result.Any())
             {
-                var result = await _getDescargasUseCase.ExecuteAsync();
-                
-                if (result == null || !result.Any())
-                {
-                    _logger.LogInformation("No descargas records found");
-                    return NoContent();
-                }
-                
-                return Ok(result);
+                _logger.LogInformation("No descargas records found");
+                return NoContent();
             }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error retrieving all descargas");
-                return StatusCode(StatusCodes.Status500InternalServerError, 
-                    new { message = "Ocurrió un error al procesar la solicitud", error = ex.Message });
-            }
+            
+            return Ok(result);
         }
 
         /// <summary>
@@ -75,11 +66,13 @@ namespace API.Controllers
         /// <response code="400">If the ID is invalid</response>
         /// <response code="404">If the descarga was not found</response>
         /// <response code="500">If there was an error processing the request</response>
+        /// <response code="503">If there was a database connection error</response>
         [HttpGet("{id:int}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [ProducesResponseType(StatusCodes.Status503ServiceUnavailable)]
         public async Task<ActionResult<DescargasEntity>> GetById(int id)
         {
             if (id <= 0)
@@ -88,24 +81,11 @@ namespace API.Controllers
                 return BadRequest(new { message = "El ID proporcionado no es válido" });
             }
 
-            try
-            {
-                var result = await _getDescargaByIdUseCase.ExecuteAsync(id);
-                
-                if (result == null)
-                {
-                    _logger.LogInformation("Descarga with ID {Id} not found", id);
-                    return NotFound(new { message = $"No se encontró una descarga con el ID {id}" });
-                }
-                
-                return Ok(result);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error retrieving descarga with ID {Id}", id);
-                return StatusCode(StatusCodes.Status500InternalServerError, 
-                    new { message = "Ocurrió un error al procesar la solicitud", error = ex.Message });
-            }
+            var result = await _getDescargaByIdUseCase.ExecuteAsync(id);
+            
+            // If we reach here, the entity was found (otherwise an EntityNotFoundException would have been thrown)
+            _logger.LogInformation("Descarga with ID {Id} retrieved successfully", id);
+            return Ok(result);
         }
 
         /// <summary>
@@ -118,11 +98,13 @@ namespace API.Controllers
         /// <response code="400">If the parameters are invalid</response>
         /// <response code="404">If no matching descargas were found</response>
         /// <response code="500">If there was an error processing the request</response>
+        /// <response code="503">If there was a database connection error</response>
         [HttpGet("search")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [ProducesResponseType(StatusCodes.Status503ServiceUnavailable)]
         public async Task<ActionResult<IEnumerable<DescargasEntity>>> GetByEstacionAndTanque(
             [FromQuery][Required] int? idEstacion, 
             [FromQuery][Required] int? noTanque)
@@ -141,29 +123,19 @@ namespace API.Controllers
                 });
             }
 
-            try
+            var result = await _getDescargaSearchUseCase.ExecuteAsync(
+                d => d.IdEstacion == idEstacion.Value && d.NoTanque == noTanque.Value);
+            
+            if (result == null || !result.Any())
             {
-                var result = await _getDescargaSearchUseCase.ExecuteAsync(
-                    d => d.IdEstacion == idEstacion.Value && d.NoTanque == noTanque.Value);
-                
-                if (result == null || !result.Any())
-                {
-                    _logger.LogInformation("No descargas found for Estacion {IdEstacion} and Tanque {NoTanque}", 
-                        idEstacion, noTanque);
-                    return NotFound(new { 
-                        message = $"No se encontraron descargas para la estación {idEstacion} y tanque {noTanque}" 
-                    });
-                }
-                
-                return Ok(result);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error searching for descargas with Estacion {IdEstacion} and Tanque {NoTanque}", 
+                _logger.LogInformation("No descargas found for Estacion {IdEstacion} and Tanque {NoTanque}", 
                     idEstacion, noTanque);
-                return StatusCode(StatusCodes.Status500InternalServerError, 
-                    new { message = "Ocurrió un error al procesar la solicitud", error = ex.Message });
+                return NotFound(new { 
+                    message = $"No se encontraron descargas para la estación {idEstacion} y tanque {noTanque}" 
+                });
             }
+            
+            return Ok(result);
         }
 
         /// <summary>
@@ -173,11 +145,15 @@ namespace API.Controllers
         /// <returns>A response indicating success or failure</returns>
         /// <response code="201">If the descarga was created successfully</response>
         /// <response code="400">If the request data is invalid</response>
+        /// <response code="409">If there is a conflict with an existing record</response>
         /// <response code="500">If there was an error processing the request</response>
+        /// <response code="503">If there was a database connection error</response>
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status409Conflict)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [ProducesResponseType(StatusCodes.Status503ServiceUnavailable)]
         public async Task<ActionResult> Create([FromBody] DescargaRequestDTO descargaRequest)
         {
             if (descargaRequest == null)
@@ -211,33 +187,19 @@ namespace API.Controllers
                 return BadRequest(new { message = "Datos de descarga inválidos", errors = validationErrors });
             }
 
-            try
-            {
-                await _createDescargasUseCase.ExecuteAsync(descargaRequest);
-                
-                _logger.LogInformation(
-                    "Descarga created successfully for Estacion {IdEstacion} and Tanque {NoTanque}",
-                    descargaRequest.IdEstacion, descargaRequest.NoTanque);
-                
-                // Since we don't know the generated ID, we return the resource location as a general endpoint
-                return Created($"/api/descargas", new { 
-                    message = "Descarga creada con éxito", 
-                    idEstacion = descargaRequest.IdEstacion,
-                    noTanque = descargaRequest.NoTanque
-                });
-            }
-            catch (ArgumentException ex)
-            {
-                _logger.LogWarning(ex, "Validation error creating descarga");
-                return BadRequest(new { message = ex.Message });
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error creating descarga for Estacion {IdEstacion} and Tanque {NoTanque}", 
-                    descargaRequest.IdEstacion, descargaRequest.NoTanque);
-                return StatusCode(StatusCodes.Status500InternalServerError, 
-                    new { message = "Ocurrió un error al crear la descarga", error = ex.Message });
-            }
+            // Let any exceptions bubble up to the global exception handler middleware
+            await _createDescargasUseCase.ExecuteAsync(descargaRequest);
+            
+            _logger.LogInformation(
+                "Descarga created successfully for Estacion {IdEstacion} and Tanque {NoTanque}",
+                descargaRequest.IdEstacion, descargaRequest.NoTanque);
+            
+            // Since we don't know the generated ID, we return the resource location as a general endpoint
+            return Created($"/api/descargas", new { 
+                message = "Descarga creada con éxito", 
+                idEstacion = descargaRequest.IdEstacion,
+                noTanque = descargaRequest.NoTanque
+            });
         }
     }
 }
