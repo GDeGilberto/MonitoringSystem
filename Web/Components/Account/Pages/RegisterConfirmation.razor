@@ -10,22 +10,23 @@
 @inject NavigationManager NavigationManager
 @inject IdentityRedirectManager RedirectManager
 
-<PageTitle>Register confirmation</PageTitle>
+<PageTitle>Confirmacion de registro</PageTitle>
 
-<h1>Register confirmation</h1>
+<h1>Confirmacion de registro</h1>
 
 <StatusMessage Message="@statusMessage" />
 
 @if (emailConfirmationLink is not null)
 {
     <p>
-        This app does not currently have a real email sender registered, see <a href="https://aka.ms/aspaccountconf">these docs</a> for how to configure a real email sender.
-        Normally this would be emailed: <a href="@emailConfirmationLink">Click here to confirm your account</a>
+        La aplicacion actualmente no tiene un servicio de envio de correos configurado, consulta <a href="https://aka.ms/aspaccountconf">la documentacion</a> 
+        para saber como configurar un servicio de correo real.
+        Normalmente, esto se enviara por correo electronico: <a href="@emailConfirmationLink">Haz clic aqui para forzar confirmacion de tu cuenta</a>
     </p>
 }
 else
 {
-    <p>Please check your email to confirm your account.</p>
+    <p>Porfavor revisa tu correo electronico para confirmar tu cuenta.</p>
 }
 
 @code {
