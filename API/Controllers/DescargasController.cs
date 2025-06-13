@@ -2,7 +2,6 @@ using Domain.Entities;
 using Application.UseCases;
 using Infrastructure.Dtos;
 using Infrastructure.Models;
-using Infrastructure.Repositories;
 using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel.DataAnnotations;
 

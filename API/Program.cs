@@ -14,12 +14,42 @@ using Infrastructure.Repositories;
 using Infrastructure.ViewModels;
 using API.Middleware;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.OpenApi.Models;
+using System.Reflection;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+
+// Configuring Swagger with XML documentation
+builder.Services.AddSwaggerGen(options =>
+{
+    options.SwaggerDoc("v1", new OpenApiInfo
+    {
+        Title = "Sistema de Monitoreo API",
+        Version = "v1",
+        Description = "API para el sistema de monitoreo de estaciones y tanques",
+        Contact = new OpenApiContact
+        {
+            Name = "Giblerto Alvarez",
+            Email = "gilbertoalvarez514@hotmail.com"
+        }
+    });
+
+    // Set the comments path for the XmlComments file
+    var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+    var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+    
+    // Enable XML comments if the file exists
+    if (File.Exists(xmlPath))
+    {
+        options.IncludeXmlComments(xmlPath);
+    }
+    
+    // Add security definitions and requirements if needed
+    // options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme { ... });
+});
 
 // Configuration EF
 builder.Services.AddDbContext<AppDbContext>(options =>
@@ -71,7 +101,11 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
-    app.UseSwaggerUI();
+    app.UseSwaggerUI(c =>
+    {
+        c.SwaggerEndpoint("/swagger/v1/swagger.json", "Monitoring API v1");
+        //c.RoutePrefix = string.Empty; // Serve the Swagger UI at the app's root
+    });
 }
 
 // Add global exception handling middleware
