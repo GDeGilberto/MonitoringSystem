@@ -3,6 +3,7 @@
 @using System.ComponentModel.DataAnnotations
 @using System.Text
 @using System.Text.Encodings.Web
+@using Domain.Constants
 @using Infrastructure.Data
 @using Microsoft.AspNetCore.Identity
 @using Microsoft.AspNetCore.WebUtilities
@@ -10,6 +11,7 @@
 @inject UserManager<ApplicationUser> UserManager
 @inject IUserStore<ApplicationUser> UserStore
 @inject SignInManager<ApplicationUser> SignInManager
+@inject RoleManager<IdentityRole> RoleManager
 @inject IEmailSender<ApplicationUser> EmailSender
 @inject ILogger<Register> Logger
 @inject NavigationManager NavigationManager
@@ -41,6 +43,15 @@
                 <InputText type="password" @bind-Value="Input.ConfirmPassword" class="form-control" autocomplete="new-password" aria-required="true" placeholder="password" />
                 <label for="confirm-password">Confirma la contraseña</label>
                 <ValidationMessage For="() => Input.ConfirmPassword" class="text-danger" />
+            </div>
+            <div class="form-floating mb-3">
+                <InputSelect @bind-Value="Input.Rol" class="form-control">
+                    @foreach (var role in Roles.AllRoles)
+                    {
+                        <option value="@role">@role</option>
+                    }
+                </InputSelect>
+                <label for="rol">Seleccionar Rol:</label>
             </div>
             <button type="submit" class="w-100 btn btn-lg btn-primary">Registrar</button>
         </EditForm>
@@ -85,6 +96,11 @@
 
         Logger.LogInformation("Usuario creo una nueva cuenta con contraseña.");
 
+        // Asegurar que existan todos los roles definidos en el sistema
+        await EnsureRolesExistAsync();
+        
+        await AssignRoleToUserAsync(user);
+
         var userId = await UserManager.GetUserIdAsync(user);
         var code = await UserManager.GenerateEmailConfirmationTokenAsync(user);
         code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
@@ -103,6 +119,41 @@
 
         await SignInManager.SignInAsync(user, isPersistent: false);
         RedirectManager.RedirectTo(ReturnUrl);
+    }
+
+    /// <summary>
+    /// Asegura que todos los roles definidos en el sistema existan en la base de datos
+    /// </summary>
+    private async Task EnsureRolesExistAsync()
+    {
+        foreach (var role in Roles.AllRoles)
+        {
+            if (!await RoleManager.RoleExistsAsync(role))
+            {
+                Logger.LogInformation($"Creando rol: {role}");
+                await RoleManager.CreateAsync(new IdentityRole(role));
+            }
+        }
+    }
+
+    /// <summary>
+    /// Asigna el rol seleccionado por el usuario o el rol por defecto (Usuario)
+    /// </summary>
+    private async Task AssignRoleToUserAsync(ApplicationUser user)
+    {
+        var roleToAssign = !string.IsNullOrEmpty(Input.Rol) ? Input.Rol : Roles.User;
+        
+        // Verificar que el rol exista antes de asignarlo
+        if (await RoleManager.RoleExistsAsync(roleToAssign))
+        {
+            Logger.LogInformation($"Asignando rol {roleToAssign} al usuario {user.Email}");
+            await UserManager.AddToRoleAsync(user, roleToAssign);
+        }
+        else
+        {
+            Logger.LogWarning($"No se pudo asignar el rol {roleToAssign} porque no existe. Asignando rol por defecto.");
+            await UserManager.AddToRoleAsync(user, Roles.User);
+        }
     }
 
     private ApplicationUser CreateUser()
@@ -144,5 +195,7 @@
         [Display(Name = "Confirm password")]
         [Compare("Password", ErrorMessage = "La contraseña y la confirmacion de contraseña no soy iguales.")]
         public string ConfirmPassword { get; set; } = "";
+
+        public string? Rol { get; set; }
     }
 }
