@@ -5,25 +5,49 @@
 
 <ul class="nav nav-pills flex-column">
     <li class="nav-item">
-        <NavLink class="nav-link" href="Account/Manage" Match="NavLinkMatch.All">Perfil</NavLink>
+        <NavLink class="nav-link" href="Account/Manage" Match="NavLinkMatch.All">
+            <i class="bi bi-file-person" aria-hidden="true"></i>
+            Perfil
+        </NavLink>
     </li>
     <li class="nav-item">
-        <NavLink class="nav-link" href="Account/Manage/Email">Correo electronico</NavLink>
+        <NavLink class="nav-link" href="Account/Manage/Email">
+            <i class="bi bi-envelope" aria-hidden="true"></i>
+            Correo electronico
+        </NavLink>
     </li>
     <li class="nav-item">
-        <NavLink class="nav-link" href="Account/Manage/ChangePassword">Contraseña</NavLink>
+        <NavLink class="nav-link" href="Account/Manage/ChangePassword">
+            <i class="bi bi-lock" aria-hidden="true"></i>
+            Contraseña
+        </NavLink>
     </li>
     @if (hasExternalLogins)
     {
         <li class="nav-item">
-            <NavLink class="nav-link" href="Account/Manage/ExternalLogins">External logins</NavLink>
+            <NavLink class="nav-link" href="Account/Manage/ExternalLogins">
+                <i class="bi bi-box-arrow-in-right" aria-hidden="true"></i>
+                External logins
+            </NavLink>
         </li>
     }
     <li class="nav-item">
-        <NavLink class="nav-link" href="Account/Manage/TwoFactorAuthentication">Autenticacion de dos pasos</NavLink>
+        <NavLink class="nav-link" href="Account/Manage/TwoFactorAuthentication">
+            <i class="bi bi-phone" aria-hidden="true"></i>
+            Autenticacion de dos pasos
+        </NavLink>
     </li>
     <li class="nav-item">
-        <NavLink class="nav-link" href="Account/Manage/PersonalData">Datos personales</NavLink>
+        <NavLink class="nav-link" href="Account/Manage/PersonalData">
+            <i class="bi bi-file-earmark-person" aria-hidden="true"></i>
+            Datos personales
+        </NavLink>
+    </li>
+    <li>
+        <NavLink class="nav-link link-danger" href="Account/Manage/Logout">
+            <i class="bi bi-box-arrow-left" aria-hidden="true"></i>
+            Cerrar sesión
+        </NavLink>
     </li>
 </ul>
 
