@@ -1,4 +1,4 @@
-﻿@implements IDisposable
+﻿@using Domain.Constants
 
 @inject NavigationManager NavigationManager
 
@@ -17,20 +17,25 @@
             </NavLink>
         </div>
 
+        <AuthorizeView Roles="@Roles.Admin">
+
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="dashboard">
+                    <i class="bi bi-file-bar-graph-fill m-2"></i>Dashboard
+                </NavLink>
+            </div>
+
+        </AuthorizeView>
 
         <AuthorizeView>
             <Authorized>
+
                 <div class="nav-item px-3">
                     <NavLink class="nav-link" href="recargas">
                         <i class="bi bi-fuel-pump-fill m-2"></i>Recargas
                     </NavLink>
                 </div>
 
-                <div class="nav-item px-3">
-                    <NavLink class="nav-link" href="dashboard">
-                        <i class="bi bi-file-bar-graph-fill m-2"></i>Dashboard
-                    </NavLink>
-                </div>
             </Authorized>
         </AuthorizeView>
     </nav>

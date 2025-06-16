@@ -1,9 +1,13 @@
 ﻿@page "/dashboard"
+@using Domain.Constants
 @using Infrastructure.Models
+@using Microsoft.AspNetCore.Authorization
 @using Web.Components.Estacion
 @using Web.Components.Productos
 @using Web.Components.Tanques
 @using Web.Components.BarChart
+
+@attribute [Authorize(Roles = Roles.Admin)]
 <PageTitle>Dashboard</PageTitle>
 
 <nav style="--bs-breadcrumb-divider: '>';" aria-label="breadcrumb">

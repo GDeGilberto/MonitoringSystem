@@ -1,7 +1,9 @@
 ﻿@page "/recargas"
+@using Microsoft.AspNetCore.Authorization
 @using Web.Components.Table
 @using BlazorDateRangePicker
 
+@attribute [Authorize]
 <PageTitle>Recargas</PageTitle>
 
 <nav style="--bs-breadcrumb-divider: '>';" aria-label="breadcrumb">
