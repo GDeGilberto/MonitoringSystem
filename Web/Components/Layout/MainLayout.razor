@@ -23,7 +23,15 @@
                     <span class="@(isMenuVisible ? "d-none" : "") font-monospace fs-3" style="font-family: Georgia, 'Times New Roman', Times, serif;">Dagal</span>
                 </div>
             </div>
-            <a href="" target="_blank">usuario</a>
+            <AuthorizeView>
+                <Authorized>
+                    <div class="nav-item px-3">
+                        <NavLink class="nav-link" href="Account/Manage">
+                            <i class="bi bi-person-circle m-2"></i> @context.User.Identity?.Name
+                        </NavLink>
+                    </div>
+                </Authorized>
+            </AuthorizeView>
         </div>
 
         <article class="content px-4">

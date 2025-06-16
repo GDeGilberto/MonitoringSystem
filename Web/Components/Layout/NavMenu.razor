@@ -1,4 +1,8 @@
-﻿<div class="top-row ps-3 navbar navbar-dark">
+﻿@implements IDisposable
+
+@inject NavigationManager NavigationManager
+
+<div class="top-row ps-3 navbar navbar-dark">
     <div class="container-fluid">
         <a class="navbar-brand" href="">Web</a>
         @buttonClose
@@ -14,19 +18,70 @@
         </div>
 
         <div class="nav-item px-3">
-            <NavLink class="nav-link" href="recargas">
-                <i class="bi bi-fuel-pump-fill m-2"></i>Recargas
+            <NavLink class="nav-link" href="auth">
+                <i class="bi bi-file-lock2-fill m-2"></i> Auth Required
             </NavLink>
         </div>
 
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="dashboard">
-                <i class="bi bi-file-bar-graph-fill m-2"></i>Dashboard
-            </NavLink>
-        </div>
+        <AuthorizeView>
+            <Authorized>
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="recargas">
+                        <i class="bi bi-fuel-pump-fill m-2"></i>Recargas
+                    </NavLink>
+                </div>
+
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="dashboard">
+                        <i class="bi bi-file-bar-graph-fill m-2"></i>Dashboard
+                    </NavLink>
+                </div>
+
+                <div class="nav-item px-3">
+                    <form action="/Account/Login" method="post">
+                        <input type="hidden" name="ReturnUrl" value="/" />
+                        <AntiforgeryToken />
+                        <button type="submit" class="nav-link">
+                            <i class="bi bi-box-arrow-left m-2"></i> Logout
+                        </button>
+                    </form>
+                </div>
+            </Authorized>
+            <NotAuthorized>
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="Account/Register">
+                        <i class="bi bi-person-fill-add m-2"></i> Register
+                    </NavLink>
+                </div>
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="Account/Login">
+                        <i class="bi bi-person-badge-fill m-2"></i> Login
+                    </NavLink>
+                </div>
+            </NotAuthorized>
+        </AuthorizeView>
     </nav>
 </div>
 
 @code{
     [Parameter] public RenderFragment? buttonClose { get; set; }
+
+    private string? currentUrl;
+
+    protected override void OnInitialized()
+    {
+        currentUrl = NavigationManager.ToBaseRelativePath(NavigationManager.Uri);
+        NavigationManager.LocationChanged += OnLocationChanged;
+    }
+
+    private void OnLocationChanged(object? sender, LocationChangedEventArgs e)
+    {
+        currentUrl = NavigationManager.ToBaseRelativePath(e.Location);
+        StateHasChanged();
+    }
+
+    public void Dispose()
+    {
+        NavigationManager.LocationChanged -= OnLocationChanged;
+    }
 }
