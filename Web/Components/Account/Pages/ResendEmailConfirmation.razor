@@ -15,11 +15,12 @@
 <PageTitle>Resend email confirmation</PageTitle>
 
 <h1>Reenviar el correo de confirmacion</h1>
-<h2>Introduce tu correo electronico.</h2>
-<hr />
+
 <StatusMessage Message="@message" />
-<div class="row">
-    <div class="col-md-4">
+<div class="row container">
+    <div class="col-md-4 card shadow p-4">
+        <h2>Introduce tu correo electronico.</h2>
+        <hr />
         <EditForm Model="Input" FormName="resend-email-confirmation" OnValidSubmit="OnValidSubmitAsync" method="post">
             <DataAnnotationsValidator />
             <ValidationSummary class="text-danger" role="alert" />
@@ -30,6 +31,14 @@
             </div>
             <button type="submit" class="w-100 btn btn-lg btn-primary">Reenviar</button>
         </EditForm>
+    </div>
+
+    <div class="col-md-8 col-md-offset-2">
+        <section>
+            <div class="d-flex justify-content-center">
+                <img src="/svg/undraw_envelope_hem0.svg" class="img-fluid  w-50" alt="Alternate Text" />
+            </div>
+        </section>
     </div>
 </div>
 
