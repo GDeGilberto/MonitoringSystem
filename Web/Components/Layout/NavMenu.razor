@@ -38,15 +38,16 @@
                 </div>
 
                 <div class="nav-item px-3">
-                    <form action="/Account/Login" method="post">
-                        <input type="hidden" name="ReturnUrl" value="/" />
+                    <form action="Account/Logout" method="post">
                         <AntiforgeryToken />
+                        <input type="hidden" name="ReturnUrl" value="@currentUrl" />
                         <button type="submit" class="nav-link">
-                            <i class="bi bi-box-arrow-left m-2"></i> Logout
+                            <i class="bi bi-box-arrow-left m-2" aria-hidden="true"></i> Cerrar sesión
                         </button>
                     </form>
                 </div>
             </Authorized>
+
             <NotAuthorized>
                 <div class="nav-item px-3">
                     <NavLink class="nav-link" href="Account/Register">
