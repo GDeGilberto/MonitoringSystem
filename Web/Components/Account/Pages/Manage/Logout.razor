@@ -1,0 +1,35 @@
+﻿@page "/Account/Manage/Logout"
+
+@inject NavigationManager NavigationManager
+
+<h3>Cerrar sesión</h3>
+
+<form action="Account/Logout" method="post">
+    <p>¿Estás seguro de que quieres cerrar sesión?</p>
+    <AntiforgeryToken />
+    <input type="hidden" name="ReturnUrl" value="@currentUrl" />
+    <button type="submit" class="btn btn-danger">
+        Si, Cerrar sesión
+    </button>
+</form>
+
+@code {
+    private string? currentUrl;
+
+    protected override void OnInitialized()
+    {
+        currentUrl = NavigationManager.ToBaseRelativePath(NavigationManager.Uri);
+        NavigationManager.LocationChanged += OnLocationChanged;
+    }
+
+    private void OnLocationChanged(object? sender, LocationChangedEventArgs e)
+    {
+        currentUrl = NavigationManager.ToBaseRelativePath(e.Location);
+        StateHasChanged();
+    }
+
+    public void Dispose()
+    {
+        NavigationManager.LocationChanged -= OnLocationChanged;
+    }
+}

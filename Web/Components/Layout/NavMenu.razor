@@ -36,16 +36,6 @@
                         <i class="bi bi-file-bar-graph-fill m-2"></i>Dashboard
                     </NavLink>
                 </div>
-
-                <div class="nav-item px-3">
-                    <form action="Account/Logout" method="post">
-                        <AntiforgeryToken />
-                        <input type="hidden" name="ReturnUrl" value="@currentUrl" />
-                        <button type="submit" class="nav-link">
-                            <i class="bi bi-box-arrow-left m-2" aria-hidden="true"></i> Cerrar sesión
-                        </button>
-                    </form>
-                </div>
             </Authorized>
 
             <NotAuthorized>
