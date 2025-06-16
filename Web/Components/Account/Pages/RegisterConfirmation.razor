@@ -18,11 +18,19 @@
 
 @if (emailConfirmationLink is not null)
 {
-    <p>
-        La aplicacion actualmente no tiene un servicio de envio de correos configurado, consulta <a href="https://aka.ms/aspaccountconf">la documentacion</a> 
-        para saber como configurar un servicio de correo real.
-        Normalmente, esto se enviara por correo electronico: <a href="@emailConfirmationLink">Haz clic aqui para forzar confirmacion de tu cuenta</a>
-    </p>
+    <section class="row">
+        <p class="col-lg-6 col-sm-12">
+            La aplicacion actualmente no tiene un servicio de envio de correos configurado, consulta <a href="https://aka.ms/aspaccountconf">la documentacion</a>
+            para saber como configurar un servicio de correo real.
+            Normalmente, esto se enviara por correo electronico: <a href="@emailConfirmationLink">Haz clic aqui para forzar confirmacion de tu cuenta</a>
+        </p>
+        <div class="col-lg-6 col-sm-12">
+            <div class="d-flex justify-content-center">
+                <img src="/svg/undraw_personal-email_hfut.svg" class="img-fluid  w-75" alt="Alternate Text" />
+            </div>
+        </div>
+    </section>
+    
 }
 else
 {
