@@ -25,7 +25,6 @@ namespace API.Controllers
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginRequest request)
         {
-            // Find user by username or email
             var user = await _userManager.FindByNameAsync(request.Username) ?? 
                        await _userManager.FindByEmailAsync(request.Username);
 
@@ -39,7 +38,7 @@ namespace API.Controllers
             if (!result.Succeeded)
                 return Unauthorized("Contraseña incorrecta");
 
-            var token = _authService.GenerateToken(user.UserName);
+            var token = await _authService.GenerateToken(user.UserName);
 
             return Ok(new { Token = token });
         }
