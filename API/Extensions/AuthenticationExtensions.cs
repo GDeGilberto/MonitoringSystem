@@ -1,5 +1,7 @@
 using API.Services;
+using Infrastructure.Data;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 
@@ -11,6 +13,21 @@ namespace API.Extensions
         {
             // Register AuthService
             services.AddScoped<AuthService>();
+            
+            // Add ASP.NET Identity services
+            services.AddIdentity<ApplicationUser, IdentityRole>(options => 
+            {
+                // Configure identity options if needed
+                options.SignIn.RequireConfirmedAccount = true;
+                options.Password.RequireDigit = true;
+                options.Password.RequireLowercase = true;
+                options.Password.RequireUppercase = true;
+                options.Password.RequireNonAlphanumeric = true;
+                options.Password.RequiredLength = 6;
+            })
+            .AddEntityFrameworkStores<AppDbContext>()
+            .AddDefaultTokenProviders()
+            .AddSignInManager();
             
             // Configure JWT Authentication
             services.AddAuthentication(options =>
