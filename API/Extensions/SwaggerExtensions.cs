@@ -21,18 +21,42 @@ namespace API.Extensions
                     }
                 });
 
+                // Enable annotations
+                options.EnableAnnotations();
+
                 // Set the comments path for the XmlComments file
                 var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
                 var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
-                
+
                 // Enable XML comments if the file exists
                 if (File.Exists(xmlPath))
                 {
                     options.IncludeXmlComments(xmlPath);
                 }
-                
-                // Add security definitions and requirements if needed
-                // options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme { ... });
+
+                options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+                {
+                    Description = "JWT Authorization header using the Bearer scheme. Enter 'Bearer' [space] and then your token.",
+                    Name = "Authorization",
+                    In = ParameterLocation.Header,
+                    Type = SecuritySchemeType.ApiKey,
+                    Scheme = "Bearer"
+                });
+
+                options.AddSecurityRequirement(new OpenApiSecurityRequirement
+                {
+                    {
+                        new OpenApiSecurityScheme
+                        {
+                            Reference = new OpenApiReference
+                            {
+                                Type = ReferenceType.SecurityScheme,
+                                Id = "Bearer"
+                            }
+                        },
+                        new string[] {}
+                    }
+                });
             });
             
             return services;
