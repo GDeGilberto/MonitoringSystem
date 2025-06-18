@@ -1,11 +1,13 @@
 using API.Extensions;
-using API.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add controllers and API explorer
+// Add core services
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
+
+// Add authentication and authorization
+builder.Services.AddJwtAuthentication(builder.Configuration);
 
 // Add Swagger documentation
 builder.Services.AddSwaggerDocumentation();
@@ -35,10 +37,8 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerDocumentation();
 }
 
-// Add global exception handling middleware
-app.UseGlobalExceptionHandling();
-
 app.UseHttpsRedirection();
+app.UseAuthentication();
 app.UseAuthorization();
 
 // Configure Hangfire dashboard and jobs
