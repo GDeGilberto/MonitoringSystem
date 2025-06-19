@@ -10,9 +10,9 @@
 @inject NavigationManager NavigationManager
 @inject IdentityRedirectManager RedirectManager
 
-<PageTitle>Inicia sesion</PageTitle>
+<PageTitle>Inicia sesión</PageTitle>
 
-<h1>Inicia sesion</h1>
+<h1>Inicia sesión</h1>
 <div class="row">
     <div class="col-md-4">
         <section class="card shadow p-4">
@@ -24,32 +24,32 @@
                 <ValidationSummary class="text-danger" role="alert" />
                 <div class="form-floating mb-3">
                     <InputText @bind-Value="Input.Email" class="form-control" autocomplete="username" aria-required="true" placeholder="name@example.com" />
-                    <label for="email" class="form-label">Correo electronico</label>
+                    <label for="email" class="form-label">Correo electrónico</label>
                     <ValidationMessage For="() => Input.Email" class="text-danger" />
                 </div>
                 <div class="form-floating mb-3">
                     <InputText type="password" @bind-Value="Input.Password" class="form-control" autocomplete="current-password" aria-required="true" placeholder="password" />
-                    <label for="password" class="form-label">Contraaseña</label>
+                    <label for="password" class="form-label">Contraseña</label>
                     <ValidationMessage For="() => Input.Password" class="text-danger" />
                 </div>
                 <div class="checkbox mb-3">
                     <label class="form-label">
                         <InputCheckbox @bind-Value="Input.RememberMe" class="darker-border-checkbox form-check-input" />
-                        Recordad credenciales
+                        Recordar credenciales
                     </label>
                 </div>
                 <div>
-                    <button type="submit" class="w-100 btn btn-lg btn-primary">Iniciar sesion</button>
+                    <button type="submit" class="w-100 btn btn-lg btn-primary">Iniciar sesión</button>
                 </div>
                 <div>
                     <p>
-                        <a href="Account/ForgotPassword">Olvidastes tu contraseña?</a>
+                        <a href="Account/ForgotPassword">¿Olvidaste tu contraseña?</a>
                     </p>
                     <p>
                         <a href="@(NavigationManager.GetUriWithQueryParameters("Account/Register", new Dictionary<string, object?> { ["ReturnUrl"] = ReturnUrl }))">Registrar a un nuevo usuario</a>
                     </p>
                     <p>
-                        <a href="Account/ResendEmailConfirmation">Reenviar correo de confirmacion</a>
+                        <a href="Account/ResendEmailConfirmation">Reenviar correo de confirmación</a>
                     </p>
                 </div>
             </EditForm>
@@ -57,7 +57,7 @@
     </div>
     <div class="col-md-8 col-md-offset-2">
         <section>
-            <h3>Usa otros servicios para iniciar sesion.</h3>
+            <h3>Usa otros servicios para iniciar sesión.</h3>
             <hr />
             <ExternalLoginPicker />
             <div class="d-flex justify-content-center">
@@ -96,7 +96,7 @@
         var result = await SignInManager.PasswordSignInAsync(Input.Email, Input.Password, Input.RememberMe, lockoutOnFailure: false);
         if (result.Succeeded)
         {
-            Logger.LogInformation("Usuario ha iniciado sesion.");
+            Logger.LogInformation("Usuario ha iniciado sesión.");
             RedirectManager.RedirectTo(ReturnUrl);
         }
         else if (result.RequiresTwoFactor)
@@ -107,12 +107,12 @@
         }
         else if (result.IsLockedOut)
         {
-            Logger.LogWarning("Cuenta de usuario bloqueado.");
+            Logger.LogWarning("Cuenta de usuario bloqueada.");
             RedirectManager.RedirectTo("Account/Lockout");
         }
         else
         {
-            errorMessage = "Error: Intento de inicio de sesion invalido.";
+            errorMessage = "Error: Intento de inicio de sesión inválido.";
         }
     }
 
