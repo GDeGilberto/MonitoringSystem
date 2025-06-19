@@ -21,9 +21,6 @@ builder.Services.AddHangfireServices(builder.Configuration);
 // Add serial port services
 builder.Services.AddSerialPortServices();
 
-// Add HTTP client services
-builder.Services.AddHttpClientServices();
-
 // Add repositories, mappers, services, use cases, and jobs
 builder.Services
     .AddRepositories()
