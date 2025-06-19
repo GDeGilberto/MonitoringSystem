@@ -1,11 +1,13 @@
-using Domain.Entities;
 using Application.UseCases;
+using Domain.Entities;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [Authorize]
     public class EstacionesController : ControllerBase
     {
         private readonly GetEstacionesUseCase _getEstacionesUseCase;

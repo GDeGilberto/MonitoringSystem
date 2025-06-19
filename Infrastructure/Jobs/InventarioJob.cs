@@ -15,19 +15,21 @@ namespace Infrastructure.Jobs
         private ISerialPortService _serialPortService;
         private ParseTankInventoryReport _parseTankInventoryReport;
         private readonly IServiceScopeFactory _scopeFactory;
+        private readonly IApiClientService _apiClient;
 
-
-        public InventarioJob(IConfiguration config,
+        public InventarioJob(
+            IConfiguration config,
             ISerialPortService serialPortService,
             ParseTankInventoryReport parseTankInventoryReport,
-            IServiceScopeFactory scopeFactory)
+            IServiceScopeFactory scopeFactory,
+            IApiClientService apiClient)
         {
             _config = config;
             _serialPortService = serialPortService;
             _parseTankInventoryReport = parseTankInventoryReport;
             _scopeFactory = scopeFactory;
+            _apiClient = apiClient;
         }
-
 
         public async Task Execute()
         {
@@ -60,6 +62,18 @@ namespace Infrastructure.Jobs
                 {
                     await inventarioService.AddAsync(inventario);
                     Console.WriteLine("Guardado exitoso");
+                    
+                    // Example of calling a protected API endpoint using the API key authentication
+                    try
+                    {
+                        // You can call your protected endpoints using the API client
+                        var apiResponse = await _apiClient.GetAsync<object>("api/JobApi/apikey-protected");
+                        Console.WriteLine("API protected endpoint accessed successfully");
+                    }
+                    catch (Exception apiEx)
+                    {
+                        Console.WriteLine($"Error accessing API endpoint: {apiEx.Message}");
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -67,6 +81,5 @@ namespace Infrastructure.Jobs
                 }
             }
         }
-
     }
 }

@@ -1,7 +1,8 @@
-using Domain.Entities;
 using Application.UseCases;
+using Domain.Entities;
 using Infrastructure.Dtos;
 using Infrastructure.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel.DataAnnotations;
 
@@ -9,6 +10,7 @@ namespace API.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [Authorize]
     public class DescargasController : ControllerBase
     {
         private readonly GetDescargasUseCase _getDescargasUseCase;

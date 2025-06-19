@@ -13,17 +13,21 @@ namespace Infrastructure.Jobs
         private readonly IConfiguration _config;
         private readonly ISerialPortService _serialPortService;
         private readonly IServiceScopeFactory _scopeFactory;
+        private readonly IApiClientService _apiClient;
         public ParceDeliveryReport _parceDeliveryReport;
 
-        public DescargasJobs(IConfiguration config,
+        public DescargasJobs(
+            IConfiguration config,
             ISerialPortService serialPortService,
             IServiceScopeFactory scopeFactory,
-            ParceDeliveryReport parceDeliveryReport)
+            ParceDeliveryReport parceDeliveryReport,
+            IApiClientService apiClient)
         {
             _config = config;
             _serialPortService = serialPortService;
             _scopeFactory = scopeFactory;
             _parceDeliveryReport = parceDeliveryReport;
+            _apiClient = apiClient;
         }
 
         public async Task Execute()
@@ -63,6 +67,18 @@ namespace Infrastructure.Jobs
                 {
                     await descargasService.AddAsync(descarga);
                     Console.WriteLine("Ultimos registros guardados");
+                    
+                    // Example of calling a protected API endpoint using the API key authentication
+                    try
+                    {
+                        // You can call your protected endpoints using the API client
+                        var apiResponse = await _apiClient.GetAsync<object>("api/JobApi/apikey-protected");
+                        Console.WriteLine("API protected endpoint accessed successfully");
+                    }
+                    catch (Exception apiEx)
+                    {
+                        Console.WriteLine($"Error accessing API endpoint: {apiEx.Message}");
+                    }
                 }
                 catch (Exception ex)
                 {
