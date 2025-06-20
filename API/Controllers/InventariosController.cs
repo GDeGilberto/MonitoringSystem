@@ -4,12 +4,21 @@ using Infrastructure.Dtos;
 using Infrastructure.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
+using Swashbuckle.AspNetCore.Annotations;
 
 namespace API.Controllers
 {
+    /// <summary>
+    /// Controlador para la gestión de inventarios de tanques
+    /// </summary>
+    /// <remarks>
+    /// Este controlador permite realizar operaciones CRUD sobre los registros de inventario de tanques.
+    /// Los inventarios representan el estado actual de los tanques de combustible en las estaciones.
+    /// </remarks>
     [ApiController]
     [Route("api/[controller]")]
     [Authorize]
+    [Produces("application/json")]
     public class InventariosController : ControllerBase
     {
         private readonly GetLatestInventarioByStationUseCase<ProcInventarioModel> _getLatestInventarioByStationUseCase;
@@ -30,19 +39,42 @@ namespace API.Controllers
         }
 
         /// <summary>
-        /// Get latest inventory by station ID
+        /// Obtiene el inventario más reciente por ID de estación
         /// </summary>
-        /// <param name="idEstacion">The ID of the station</param>
-        /// <returns>The latest inventory records for the specified station</returns>
-        /// <response code="200">Returns the latest inventory records</response>
-        /// <response code="204">If no inventory records exist for the station</response>
-        /// <response code="400">If the station ID is invalid</response>
-        /// <response code="500">If there was an error processing the request</response>
-        /// <response code="503">If there was a database connection error</response>
+        /// <remarks>
+        /// Este endpoint retorna los registros de inventario más recientes para una estación específica.
+        /// 
+        /// La información incluye:
+        /// - Nivel actual de cada tanque
+        /// - Volumen disponible
+        /// - Temperatura del producto
+        /// - Fecha y hora de la última medición
+        /// - Información sobre el producto almacenado
+        /// 
+        /// Si el ID de estación no es válido (menor o igual a cero), se retorna BadRequest.
+        /// Si no existen registros de inventario para la estación, se retorna NoContent.
+        /// </remarks>
+        /// <param name="idEstacion">ID de la estación</param>
+        /// <returns>Los registros de inventario más recientes para la estación especificada</returns>
+        /// <response code="200">Retorna los registros de inventario</response>
+        /// <response code="204">Si no existen registros de inventario para la estación</response>
+        /// <response code="400">Si el ID de estación proporcionado no es válido</response>
+        /// <response code="401">Si el usuario no está autenticado</response>
+        /// <response code="403">Si el usuario no tiene permisos para acceder a este recurso</response>
+        /// <response code="500">Si ocurrió un error interno al procesar la solicitud</response>
+        /// <response code="503">Si hay un problema de conexión con la base de datos</response>
         [HttpGet("{idEstacion:int}")]
+        [SwaggerOperation(
+            Summary = "Obtiene el inventario más reciente por estación",
+            Description = "Retorna los registros de inventario más recientes para una estación específica",
+            OperationId = "GetInventarioByEstacion",
+            Tags = new[] { "Inventarios" }
+        )]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [ProducesResponseType(StatusCodes.Status503ServiceUnavailable)]
         public async Task<ActionResult<IEnumerable<InventarioEntity>>> GetByEstacion(int idEstacion)
@@ -66,18 +98,41 @@ namespace API.Controllers
         }
 
         /// <summary>
-        /// Get inventory by ID
+        /// Obtiene un registro de inventario por su ID
         /// </summary>
-        /// <param name="id">The ID of the inventory record</param>
-        /// <returns>The inventory record with the specified ID</returns>
-        /// <response code="200">Returns the inventory record</response>
-        /// <response code="400">If the ID is invalid</response>
-        /// <response code="404">If the inventory record was not found</response>
-        /// <response code="500">If there was an error processing the request</response>
-        /// <response code="503">If there was a database connection error</response>
+        /// <remarks>
+        /// Este endpoint retorna información detallada de un registro de inventario específico según su ID.
+        /// 
+        /// La información incluye:
+        /// - Estación y tanque asociados
+        /// - Volumen disponible
+        /// - Temperatura del producto
+        /// - Fecha y hora de la medición
+        /// - Información sobre el producto almacenado
+        /// 
+        /// Si el ID no es válido (menor o igual a cero), se retorna BadRequest.
+        /// Si no se encuentra un registro de inventario con el ID especificado, se retorna NotFound.
+        /// </remarks>
+        /// <param name="id">ID del registro de inventario a consultar</param>
+        /// <returns>El registro de inventario solicitado</returns>
+        /// <response code="200">Retorna el registro de inventario solicitado</response>
+        /// <response code="400">Si el ID proporcionado no es válido</response>
+        /// <response code="401">Si el usuario no está autenticado</response>
+        /// <response code="403">Si el usuario no tiene permisos para acceder a este recurso</response>
+        /// <response code="404">Si no se encontró el registro de inventario</response>
+        /// <response code="500">Si ocurrió un error interno al procesar la solicitud</response>
+        /// <response code="503">Si hay un problema de conexión con la base de datos</response>
         [HttpGet("id/{id:int}")]
+        [SwaggerOperation(
+            Summary = "Obtiene un inventario por su ID",
+            Description = "Retorna información detallada de un registro de inventario específico",
+            OperationId = "GetInventarioById",
+            Tags = new[] { "Inventarios" }
+        )]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [ProducesResponseType(StatusCodes.Status503ServiceUnavailable)]
@@ -105,18 +160,54 @@ namespace API.Controllers
         }
 
         /// <summary>
-        /// Create a new inventory record
+        /// Crea un nuevo registro de inventario
         /// </summary>
-        /// <param name="inventarioRequest">The inventory data</param>
-        /// <returns>A response indicating success or failure</returns>
-        /// <response code="201">If the inventory record was created successfully</response>
-        /// <response code="400">If the request data is invalid</response>
-        /// <response code="409">If there is a conflict with an existing record</response>
-        /// <response code="500">If there was an error processing the request</response>
-        /// <response code="503">If there was a database connection error</response>
+        /// <remarks>
+        /// Este endpoint permite registrar un nuevo inventario en el sistema.
+        /// 
+        /// **Campos requeridos:**
+        /// - IdEstacion: ID de la estación (valor positivo)
+        /// - NoTanque: Número del tanque (valor positivo)
+        /// - VolumenDisponible: Volumen disponible (en litros, valor positivo)
+        /// 
+        /// **Campos opcionales:**
+        /// - Temperatura: Temperatura del producto (en grados Celsius)
+        /// - Fecha: Fecha y hora de la medición (por defecto, la fecha actual)
+        /// - Observaciones: Notas adicionales sobre la medición
+        /// 
+        /// Ejemplo de solicitud:
+        /// 
+        /// ```json
+        /// {
+        ///   "idEstacion": 1,
+        ///   "noTanque": 2,
+        ///   "volumenDisponible": 3500.75,
+        ///   "temperatura": 25.5,
+        ///   "fecha": "2023-06-15T10:30:00Z",
+        ///   "observaciones": "Medición rutinaria programada"
+        /// }
+        /// ```
+        /// </remarks>
+        /// <param name="inventarioRequest">Datos del inventario a crear</param>
+        /// <returns>Respuesta indicando el éxito o fracaso de la operación</returns>
+        /// <response code="201">Si el inventario se creó exitosamente</response>
+        /// <response code="400">Si los datos de la solicitud son inválidos</response>
+        /// <response code="401">Si el usuario no está autenticado</response>
+        /// <response code="403">Si el usuario no tiene permisos para realizar esta acción</response>
+        /// <response code="409">Si hay un conflicto con un registro existente</response>
+        /// <response code="500">Si ocurrió un error interno al procesar la solicitud</response>
+        /// <response code="503">Si hay un problema de conexión con la base de datos</response>
         [HttpPost]
+        [SwaggerOperation(
+            Summary = "Crea un nuevo registro de inventario",
+            Description = "Registra un nuevo inventario en el sistema",
+            OperationId = "CreateInventario",
+            Tags = new[] { "Inventarios" }
+        )]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status409Conflict)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [ProducesResponseType(StatusCodes.Status503ServiceUnavailable)]

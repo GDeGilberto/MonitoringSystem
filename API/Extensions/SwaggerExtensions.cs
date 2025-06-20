@@ -4,8 +4,16 @@ using Swashbuckle.AspNetCore.SwaggerUI;
 
 namespace API.Extensions
 {
+    /// <summary>
+    /// Extensiones para configurar la documentación de Swagger en la API
+    /// </summary>
     public static class SwaggerExtensions
     {
+        /// <summary>
+        /// Agrega y configura los servicios de documentación Swagger
+        /// </summary>
+        /// <param name="services">Colección de servicios de la aplicación</param>
+        /// <returns>La colección de servicios actualizada</returns>
         public static IServiceCollection AddSwaggerDocumentation(this IServiceCollection services)
         {
             services.AddSwaggerGen(options =>
@@ -15,7 +23,7 @@ namespace API.Extensions
                     Title = "Sistema de Monitoreo API",
                     Version = "v1",
                     Description = @"API para el sistema de monitoreo de estaciones y tanques.
-                    
+                  
 Esta API permite gestionar estaciones, inventarios y registros de descargas en el sistema de monitoreo.
 
 ## Características principales
@@ -23,13 +31,24 @@ Esta API permite gestionar estaciones, inventarios y registros de descargas en e
 - Control de inventarios de tanques
 - Registro de descargas
 - Autenticación mediante JWT
-- Sistema de programación de trabajos con Hangfire",
+- Sistema de programación de trabajos con Hangfire
+
+## Inicio rápido
+Para comenzar a usar esta API:
+1. Autentícate usando el endpoint `/api/auth/login`
+2. Usa el token JWT recibido en el encabezado `Authorization`
+3. Explora los recursos disponibles según tus permisos
+
+## Modelos de datos principales
+- **Estaciones**: Representa una ubicación física donde se encuentran los tanques
+- **Inventarios**: Estado actual del combustible en cada tanque de la estación
+- **Descargas**: Registros de transferencias de combustible a los tanques",
                     Contact = new OpenApiContact
                     {
                         Name = "Gilberto Alvarez",
                         Email = "gilbertoalvarez514@hotmail.com",
                         Url = new Uri("https://github.com/gdegilberto", UriKind.Absolute)
-                    },
+                    }
                     //License = new OpenApiLicense
                     //{
                     //    Name = "Uso interno",
@@ -48,10 +67,20 @@ Esta API permite gestionar estaciones, inventarios y registros de descargas en e
                 if (File.Exists(xmlPath))
                 {
                     options.IncludeXmlComments(xmlPath);
+                    
+                    // Buscar otros archivos XML de documentación en proyectos referenciados
+                    var baseDirectory = AppContext.BaseDirectory;
+                    foreach (var fileName in Directory.GetFiles(baseDirectory, "*.xml"))
+                    {
+                        if (fileName != xmlPath) // Evitar incluir el mismo archivo dos veces
+                        {
+                            options.IncludeXmlComments(fileName);
+                        }
+                    }
                 }
 
-                // Group endpoints by controller
-                options.TagActionsBy(api => [api.GroupName ?? api.ActionDescriptor.RouteValues["controller"]]);
+                // Agrupar endpoints por controlador
+                options.TagActionsBy(api => new[] { api.GroupName ?? api.ActionDescriptor.RouteValues["controller"] });
                 options.DocInclusionPredicate((name, api) => true);
 
                 // Ordenar tags (controladores) alfabéticamente
@@ -94,11 +123,19 @@ Esta API permite gestionar estaciones, inventarios y registros de descargas en e
 
                 options.CustomSchemaIds(type => type.FullName);
                 options.OperationFilter<SwaggerDefaultValues>();
+                
+                // Configuraciones adicionales para mejorar la documentación
+                options.DescribeAllParametersInCamelCase();
             });
 
             return services;
         }
 
+        /// <summary>
+        /// Configura el middleware de Swagger en la aplicación
+        /// </summary>
+        /// <param name="app">Builder de la aplicación</param>
+        /// <returns>El builder de la aplicación actualizado</returns>
         public static IApplicationBuilder UseSwaggerDocumentation(this IApplicationBuilder app)
         {
             app.UseSwagger(options =>
@@ -145,12 +182,25 @@ Esta API permite gestionar estaciones, inventarios y registros de descargas en e
                 
                 // Ocultar los modelos por defecto en la parte inferior
                 c.DefaultModelsExpandDepth(-1);
+                
+                // Personalizar el tema
+                c.HeadContent = @"
+                <style>
+                    .swagger-ui .topbar { background-color: #1a365d; }
+                    .swagger-ui .info .title { font-size: 24px; }
+                    .swagger-ui .opblock-tag { font-size: 18px; }
+                    .swagger-ui .opblock .opblock-summary-operation-id { font-size: 14px; }
+                    .swagger-ui .btn.authorize { background-color: #4c9aff; }
+                    .swagger-ui .btn.authorize:hover { background-color: #2684ff; }
+                </style>";
             });
 
             return app;
         }
 
-        // Define el orden de los controladores
+        /// <summary>
+        /// Define el orden de los controladores
+        /// </summary>
         private static string GetTagOrderPrefix(string controllerName)
         {
             return controllerName switch
@@ -164,7 +214,9 @@ Esta API permite gestionar estaciones, inventarios y registros de descargas en e
         }
     }
 
-    // Operation filter for adding default values
+    /// <summary>
+    /// Operation filter for adding default values
+    /// </summary>
     public class SwaggerDefaultValues : Swashbuckle.AspNetCore.SwaggerGen.IOperationFilter
     {
         public void Apply(OpenApiOperation operation, Swashbuckle.AspNetCore.SwaggerGen.OperationFilterContext context)
@@ -185,6 +237,17 @@ Esta API permite gestionar estaciones, inventarios y registros de descargas en e
                 
                 // Asignar la descripción
                 operation.Tags[0].Description = GetTagDescription(controllerName);
+            }
+            
+            // Mejorar la descripción de los parámetros
+            foreach (var parameter in operation.Parameters)
+            {
+                var description = parameter.Description;
+                if (string.IsNullOrEmpty(description))
+                {
+                    // Intentar generar una descripción basada en el nombre del parámetro
+                    parameter.Description = $"Parámetro {parameter.Name}";
+                }
             }
         }
 

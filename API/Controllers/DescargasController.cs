@@ -5,12 +5,21 @@ using Infrastructure.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel.DataAnnotations;
+using Swashbuckle.AspNetCore.Annotations;
 
 namespace API.Controllers
 {
+    /// <summary>
+    /// Controlador para la gestión de descargas de combustible
+    /// </summary>
+    /// <remarks>
+    /// Este controlador permite realizar operaciones CRUD sobre los registros de descargas en estaciones.
+    /// Las descargas representan el proceso de transferencia de combustible a un tanque específico.
+    /// </remarks>
     [ApiController]
     [Route("api/[controller]")]
     [Authorize]
+    [Produces("application/json")]
     public class DescargasController : ControllerBase
     {
         private readonly GetDescargasUseCase _getDescargasUseCase;
@@ -34,15 +43,32 @@ namespace API.Controllers
         }
 
         /// <summary>
-        /// Get all descargas records
+        /// Obtiene todos los registros de descargas
         /// </summary>
-        /// <returns>A list of all descargas</returns>
-        /// <response code="200">Returns the list of descargas</response>
-        /// <response code="204">If no descargas records exist</response>
-        /// <response code="500">If there was an error processing the request</response>
+        /// <remarks>
+        /// Este endpoint retorna un listado completo de todas las descargas registradas en el sistema.
+        /// Si no existen registros, se devuelve un código 204 No Content.
+        /// 
+        /// Los registros están ordenados por fecha de descarga, del más reciente al más antiguo.
+        /// </remarks>
+        /// <returns>Lista de todos los registros de descargas</returns>
+        /// <response code="200">Retorna la lista de descargas</response>
+        /// <response code="204">Si no existen registros de descargas</response>
+        /// <response code="401">Si el usuario no está autenticado</response>
+        /// <response code="403">Si el usuario no tiene permisos para acceder a este recurso</response>
+        /// <response code="500">Si ocurrió un error interno al procesar la solicitud</response>
+        /// <response code="503">Si hay un problema de conexión con la base de datos</response>
         [HttpGet]
+        [SwaggerOperation(
+            Summary = "Obtiene todos los registros de descargas",
+            Description = "Retorna la lista completa de descargas en el sistema",
+            OperationId = "GetDescargas",
+            Tags = new[] { "Descargas" }
+        )]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [ProducesResponseType(StatusCodes.Status503ServiceUnavailable)]
         public async Task<ActionResult<IEnumerable<DescargasEntity>>> Get()
@@ -59,18 +85,34 @@ namespace API.Controllers
         }
 
         /// <summary>
-        /// Get a descarga by its ID
+        /// Obtiene una descarga por su ID
         /// </summary>
-        /// <param name="id">The ID of the descarga to retrieve</param>
-        /// <returns>The requested descarga</returns>
-        /// <response code="200">Returns the requested descarga</response>
-        /// <response code="400">If the ID is invalid</response>
-        /// <response code="404">If the descarga was not found</response>
-        /// <response code="500">If there was an error processing the request</response>
-        /// <response code="503">If there was a database connection error</response>
+        /// <remarks>
+        /// Este endpoint retorna información detallada de una descarga específica según su ID.
+        /// 
+        /// Si el ID no es válido (menor o igual a cero), se retorna BadRequest.
+        /// Si no se encuentra una descarga con el ID especificado, se retorna NotFound.
+        /// </remarks>
+        /// <param name="id">ID de la descarga a consultar</param>
+        /// <returns>La descarga solicitada</returns>
+        /// <response code="200">Retorna la descarga solicitada</response>
+        /// <response code="400">Si el ID proporcionado no es válido</response>
+        /// <response code="401">Si el usuario no está autenticado</response>
+        /// <response code="403">Si el usuario no tiene permisos para acceder a este recurso</response>
+        /// <response code="404">Si no se encontró la descarga</response>
+        /// <response code="500">Si ocurrió un error interno al procesar la solicitud</response>
+        /// <response code="503">Si hay un problema de conexión con la base de datos</response>
         [HttpGet("{id:int}")]
+        [SwaggerOperation(
+            Summary = "Obtiene una descarga por su ID",
+            Description = "Retorna información detallada de una descarga específica",
+            OperationId = "GetDescargaById",
+            Tags = new[] { "Descargas" }
+        )]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [ProducesResponseType(StatusCodes.Status503ServiceUnavailable)]
@@ -90,19 +132,35 @@ namespace API.Controllers
         }
 
         /// <summary>
-        /// Search for descargas by estacion ID and tanque number
+        /// Busca descargas por ID de estación y número de tanque
         /// </summary>
-        /// <param name="idEstacion">The ID of the estacion</param>
-        /// <param name="noTanque">The tank number</param>
-        /// <returns>A list of matching descargas</returns>
-        /// <response code="200">Returns the list of matching descargas</response>
-        /// <response code="400">If the parameters are invalid</response>
-        /// <response code="404">If no matching descargas were found</response>
-        /// <response code="500">If there was an error processing the request</response>
-        /// <response code="503">If there was a database connection error</response>
+        /// <remarks>
+        /// Este endpoint permite filtrar descargas por una combinación de ID de estación y número de tanque.
+        /// 
+        /// Ambos parámetros son obligatorios y deben ser valores positivos.
+        /// Si no se encuentran descargas que coincidan con los criterios, se retorna NotFound.
+        /// </remarks>
+        /// <param name="idEstacion">ID de la estación (requerido, debe ser positivo)</param>
+        /// <param name="noTanque">Número del tanque (requerido, debe ser positivo)</param>
+        /// <returns>Lista de descargas que coinciden con los criterios de búsqueda</returns>
+        /// <response code="200">Retorna la lista de descargas que coinciden con los criterios</response>
+        /// <response code="400">Si alguno de los parámetros no es válido</response>
+        /// <response code="401">Si el usuario no está autenticado</response>
+        /// <response code="403">Si el usuario no tiene permisos para acceder a este recurso</response>
+        /// <response code="404">Si no se encontraron descargas que coincidan con los criterios</response>
+        /// <response code="500">Si ocurrió un error interno al procesar la solicitud</response>
+        /// <response code="503">Si hay un problema de conexión con la base de datos</response>
         [HttpGet("search")]
+        [SwaggerOperation(
+            Summary = "Busca descargas por estación y tanque",
+            Description = "Filtra descargas según el ID de estación y número de tanque",
+            OperationId = "SearchDescargas",
+            Tags = new[] { "Descargas" }
+        )]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [ProducesResponseType(StatusCodes.Status503ServiceUnavailable)]
@@ -140,18 +198,53 @@ namespace API.Controllers
         }
 
         /// <summary>
-        /// Create a new descarga
+        /// Crea un nuevo registro de descarga
         /// </summary>
-        /// <param name="descargaRequest">The descarga data</param>
-        /// <returns>A response indicating success or failure</returns>
-        /// <response code="201">If the descarga was created successfully</response>
-        /// <response code="400">If the request data is invalid</response>
-        /// <response code="409">If there is a conflict with an existing record</response>
-        /// <response code="500">If there was an error processing the request</response>
-        /// <response code="503">If there was a database connection error</response>
+        /// <remarks>
+        /// Este endpoint permite registrar una nueva descarga en el sistema.
+        /// 
+        /// **Campos requeridos:**
+        /// - IdEstacion: ID de la estación (valor positivo)
+        /// - NoTanque: Número del tanque (valor positivo)
+        /// - VolumenInicial: Volumen inicial (en litros, valor positivo)
+        /// - FechaInicial: Fecha y hora de inicio de la descarga
+        /// - VolumenDisponible: Volumen disponible después de la descarga (en litros, valor positivo)
+        /// - FechaFinal: Fecha y hora de finalización de la descarga
+        /// 
+        /// Ejemplo de solicitud:
+        /// 
+        /// ```json
+        /// {
+        ///   "idEstacion": 1,
+        ///   "noTanque": 2,
+        ///   "volumenInicial": 1000.5,
+        ///   "fechaInicial": "2023-06-15T08:30:00Z",
+        ///   "volumenDisponible": 3500.75,
+        ///   "fechaFinal": "2023-06-15T09:45:00Z",
+        ///   "observaciones": "Descarga regular programada"
+        /// }
+        /// ```
+        /// </remarks>
+        /// <param name="descargaRequest">Datos de la descarga a crear</param>
+        /// <returns>Respuesta indicando el éxito o fracaso de la operación</returns>
+        /// <response code="201">Si la descarga se creó exitosamente</response>
+        /// <response code="400">Si los datos de la solicitud son inválidos</response>
+        /// <response code="401">Si el usuario no está autenticado</response>
+        /// <response code="403">Si el usuario no tiene permisos para realizar esta acción</response>
+        /// <response code="409">Si hay un conflicto con un registro existente</response>
+        /// <response code="500">Si ocurrió un error interno al procesar la solicitud</response>
+        /// <response code="503">Si hay un problema de conexión con la base de datos</response>
         [HttpPost]
+        [SwaggerOperation(
+            Summary = "Crea un nuevo registro de descarga",
+            Description = "Registra una nueva descarga en el sistema",
+            OperationId = "CreateDescarga",
+            Tags = new[] { "Descargas" }
+        )]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status409Conflict)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [ProducesResponseType(StatusCodes.Status503ServiceUnavailable)]
