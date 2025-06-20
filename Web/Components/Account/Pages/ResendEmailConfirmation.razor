@@ -14,31 +14,72 @@
 
 <PageTitle>Reenviar correo de confirmación</PageTitle>
 
-<h1>Reenviar el correo de confirmación</h1>
-
 <StatusMessage Message="@message" />
-<div class="row container">
-    <div class="col-md-4 card shadow p-4">
-        <h2>Introduce tu correo electrónico.</h2>
-        <hr />
-        <EditForm Model="Input" FormName="resend-email-confirmation" OnValidSubmit="OnValidSubmitAsync" method="post">
-            <DataAnnotationsValidator />
-            <ValidationSummary class="text-danger" role="alert" />
-            <div class="form-floating mb-3">
-                <InputText @bind-Value="Input.Email" class="form-control" aria-required="true" placeholder="name@example.com" />
-                <label for="email" class="form-label">Correo electrónico</label>
-                <ValidationMessage For="() => Input.Email" class="text-danger" />
-            </div>
-            <button type="submit" class="w-100 btn btn-lg btn-primary">Reenviar</button>
-        </EditForm>
-    </div>
+<div class="container min-h-100 d-flex align-items-center py-5">
+    <div class="row justify-content-center gx-5">
+        <!-- Tarjeta del formulario -->
+        <div class="col-md-5 mb-5 mb-lg-0">
+            <div class="card border-0 shadow-lg rounded-3 overflow-hidden">
+                <div class="card-header bg-warning text-dark py-4">
+                    <div class="d-flex align-items-center">
+                        <i class="bi bi-envelope-exclamation-fill fs-1 me-3"></i>
+                        <div>
+                            <h2 class="h4 mb-0">Confirmar correo electrónico</h2>
+                            <p class="small mb-0">Reenviar enlace de verificación</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body p-4 p-md-5">
+                    <EditForm Model="Input" FormName="resend-email-confirmation" OnValidSubmit="OnValidSubmitAsync" method="post">
+                        <DataAnnotationsValidator />
+                        <ValidationSummary class="alert alert-danger" role="alert" />
 
-    <div class="col-md-8 col-md-offset-2">
-        <section>
-            <div class="d-flex justify-content-center">
-                <img src="/svg/undraw_envelope_hem0.svg" class="img-fluid  w-50" alt="Alternate Text" />
+                        <div class="mb-4 text-center">
+                            <p>Ingresa tu correo electrónico para reenviar el enlace de confirmación.</p>
+                        </div>
+
+                        <div class="form-floating mb-4">
+                            <InputText @bind-Value="Input.Email" class="form-control" id="email"
+                                       aria-required="true" placeholder="name@example.com" />
+                            <label for="email">Correo electrónico</label>
+                            <ValidationMessage For="() => Input.Email" class="text-danger small mt-1" />
+                        </div>
+
+                        <button type="submit" class="w-100 btn btn-warning btn-lg rounded-pill py-3 fw-bold text-white">
+                            <i class="bi bi-send-check me-2"></i>Reenviar correo
+                        </button>
+                    </EditForm>
+
+                    <div class="text-center mt-4">
+                        <a href="/Account/Login" class="text-decoration-none">
+                            <i class="bi bi-arrow-left me-1"></i>Volver al inicio de sesión
+                        </a>
+                    </div>
+                </div>
             </div>
-        </section>
+        </div>
+
+        <!-- Sección informativa -->
+        <div class="col-md-7 d-flex flex-column justify-content-center">
+            <div class="text-center px-lg-5">
+                <h3 class="fw-bold mb-3">¿No recibiste el correo de confirmación?</h3>
+                <p class="lead text-muted mb-4">
+                    A veces los correos pueden tardar.
+                    Reenviamos el enlace para que puedas verificar tu cuenta y acceder
+                    a todas las funciones del sistema.
+                </p>
+
+                <div class="bg-light p-4 rounded-3">
+                    <h4 class="h6 fw-bold mb-3"><i class="bi bi-lightbulb-fill text-warning me-2"></i>Recomendaciones</h4>
+                    <ul class="small text-start">
+                        <li class="mb-2">Revisa tu carpeta de spam o correo no deseado</li>
+                        <li class="mb-2">Asegúrate de haber ingresado el correo correctamente</li>
+                        <li>Si el problema persiste, contacta al soporte técnico</li>
+                    </ul>
+                </div>
+                <img src="/svg/undraw_envelope_hem0.svg" class="img-fluid mb-4" style="max-height: 250px;" alt="Ilustración de correo electrónico" />
+            </div>
+        </div>
     </div>
 </div>
 
