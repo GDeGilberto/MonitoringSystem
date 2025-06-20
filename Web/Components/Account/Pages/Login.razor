@@ -12,59 +12,95 @@
 
 <PageTitle>Inicia sesión</PageTitle>
 
-<h1>Inicia sesión</h1>
-<div class="row">
-    <div class="col-md-4">
-        <section class="card shadow p-4">
-            <StatusMessage Message="@errorMessage" />
-            <EditForm Model="Input" method="post" OnValidSubmit="LoginUser" FormName="login">
-                <DataAnnotationsValidator />
-                <h2>Usa una cuenta local para entrar.</h2>
-                <hr />
-                <ValidationSummary class="text-danger" role="alert" />
-                <div class="form-floating mb-3">
-                    <InputText @bind-Value="Input.Email" class="form-control" autocomplete="username" aria-required="true" placeholder="name@example.com" />
-                    <label for="email" class="form-label">Correo electrónico</label>
-                    <ValidationMessage For="() => Input.Email" class="text-danger" />
+<div class="container min-h-100 d-flex align-items-center py-5 py-md-0">
+    <div class="row justify-content-center gx-5">
+        <!-- Tarjeta del formulario -->
+        <div class="col-lg-5 col-md-8 mb-5 mb-lg-0">
+            <div class="card border-0 shadow-lg rounded-3 overflow-hidden">
+                <div class="card-header bg-primary text-white py-4">
+                    <div class="d-flex align-items-center gap-3 px-3">
+                        <i class="bi bi-box-arrow-in-right fs-1"></i>
+                        <div>
+                            <h2 class="h4 mb-0">Iniciar sesión</h2>
+                            <p class="small mb-0">Ingresa tus credenciales para continuar</p>
+                        </div>
+                    </div>
                 </div>
-                <div class="form-floating mb-3">
-                    <InputText type="password" @bind-Value="Input.Password" class="form-control" autocomplete="current-password" aria-required="true" placeholder="password" />
-                    <label for="password" class="form-label">Contraseña</label>
-                    <ValidationMessage For="() => Input.Password" class="text-danger" />
+                <div class="card-body p-4 p-md-5">
+                    <StatusMessage Message="@errorMessage"/>
+
+                    <EditForm Model="Input" method="post" OnValidSubmit="LoginUser" FormName="login">
+                        <DataAnnotationsValidator />
+                        <ValidationSummary class="alert alert-danger" role="alert" />
+
+                        <div class="form-floating mb-4">
+                            <InputText @bind-Value="Input.Email" class="form-control" id="email"
+                                       autocomplete="username" aria-required="true" placeholder="name@example.com" />
+                            <label for="email">Correo electrónico</label>
+                            <ValidationMessage For="() => Input.Email" class="text-danger small mt-1" />
+                        </div>
+
+                        <div class="form-floating mb-4">
+                            <InputText type="password" @bind-Value="Input.Password" class="form-control" id="password"
+                                       autocomplete="current-password" aria-required="true" placeholder="password" />
+                            <label for="password">Contraseña</label>
+                            <ValidationMessage For="() => Input.Password" class="text-danger small mt-1" />
+                        </div>
+
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                            <div class="form-check">
+                                <InputCheckbox @bind-Value="Input.RememberMe" class="form-check-input" id="rememberMe" />
+                                <label class="form-check-label" for="rememberMe">Recordar credenciales</label>
+                            </div>
+                            <a href="Account/ForgotPassword" class="text-decoration-none small">¿Olvidaste tu contraseña?</a>
+                        </div>
+
+                        <button type="submit" class="w-100 btn btn-primary btn-lg rounded-pill py-3 fw-bold">
+                            <i class="bi bi-box-arrow-in-right me-2"></i>Iniciar sesión
+                        </button>
+                    </EditForm>
+
+                    <div class="text-center pt-4">
+                        <p class="small text-muted mb-2">
+                            ¿No tienes una cuenta?
+                            <a href="@(NavigationManager.GetUriWithQueryParameters("Account/Register", new Dictionary<string, object?> { ["ReturnUrl"] = ReturnUrl }))"
+                               class="text-decoration-none fw-semibold">
+                                Regístrate aquí
+                            </a>
+                        </p>
+                        <a href="Account/ResendEmailConfirmation" class="small text-decoration-none">Reenviar correo de confirmación</a>
+                    </div>
+
+                    @* 
+                    <!-- Sección para autenticación externa (opcional) -->
+                    <h3>Usa otros servicios para iniciar sesión.</h3>
+                    <hr />
+                    <ExternalLoginPicker />
+                    *@
                 </div>
-                <div class="checkbox mb-3">
-                    <label class="form-label">
-                        <InputCheckbox @bind-Value="Input.RememberMe" class="darker-border-checkbox form-check-input" />
-                        Recordar credenciales
-                    </label>
-                </div>
-                <div>
-                    <button type="submit" class="w-100 btn btn-lg btn-primary">Iniciar sesión</button>
-                </div>
-                <div>
-                    <p>
-                        <a href="Account/ForgotPassword">¿Olvidaste tu contraseña?</a>
-                    </p>
-                    <p>
-                        <a href="@(NavigationManager.GetUriWithQueryParameters("Account/Register", new Dictionary<string, object?> { ["ReturnUrl"] = ReturnUrl }))">Registrar a un nuevo usuario</a>
-                    </p>
-                    <p>
-                        <a href="Account/ResendEmailConfirmation">Reenviar correo de confirmación</a>
-                    </p>
-                </div>
-            </EditForm>
-        </section>
-    </div>
-    <div class="col-md-8 col-md-offset-2">
-        <section>
-            <h3>Usa otros servicios para iniciar sesión.</h3>
-            <hr />
-            <ExternalLoginPicker />
-            <div class="d-flex justify-content-center">
-                <img src="/svg/undraw_mobile-log-in_0n4q.svg" class="img-fluid  w-50" alt="Alternate Text" />
             </div>
-            
-        </section>
+        </div>
+
+        <!-- Sección de bienvenida -->
+        <div class="col-lg-5 col-md-8 d-flex flex-column justify-content-center">
+            <div class="text-center px-lg-5">
+                
+                <h3 class="fw-bold mb-3">¡Bienvenido de nuevo!</h3>
+                <p class="lead text-muted mb-4">
+                    Nos alegra tenerte por aquí. Inicia sesión para retomar donde lo dejaste y seguir monitoreando la estación.
+                </p>
+
+@*                 <div class="bg-light p-4 rounded-3">
+                    <h4 class="h6 fw-bold mb-3"><i class="bi bi-shield-lock text-primary me-2"></i>Tu seguridad es importante</h4>
+                    <ul class="small text-start">
+                        <li class="mb-2">Conexión segura con encriptación</li>
+                        <li class="mb-2">Protección contra ataques</li>
+                        <li>Tus datos siempre privados</li>
+                    </ul>
+                </div> *@
+                <img src="/svg/undraw_mobile-log-in_0n4q.svg" class="img-fluid mb-4" style="max-height: 250px;" alt="Ilustración de inicio de sesión" />
+            </div>
+        </div>
     </div>
 </div>
 
