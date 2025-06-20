@@ -1,14 +1,16 @@
 ﻿@inherits LayoutComponentBase
 
 <div class="page">
-    <div class="sidebar @(isMenuVisible ? "show" : "")">
-        <NavMenu>
-            <buttonClose>
-                <button @onclick="HandleMenuToggle" class="btn-close bg-light"></button>
-            </buttonClose>
-        </NavMenu>
-    </div>
-
+    <AuthorizeView>
+        <div class="sidebar @(isMenuVisible ? "show" : "")">
+            <NavMenu>
+                <buttonClose>
+                    <button @onclick="HandleMenuToggle" class="btn-close bg-light"></button>
+                </buttonClose>
+            </NavMenu>
+        </div>
+    </AuthorizeView>
+    
     <main>
         <div class="top-row px-4">
             <div class="d-flex align-items-center">
@@ -69,6 +71,5 @@
     private void HandleMenuToggle()
     {
         isMenuVisible = !isMenuVisible;
-
     }
 }
