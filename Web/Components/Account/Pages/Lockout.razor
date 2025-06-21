@@ -1,8 +1,113 @@
 ﻿@page "/Account/Lockout"
+@using Microsoft.AspNetCore.Identity
+@using Microsoft.Extensions.Options
+@inject IOptions<IdentityOptions> IdentityOptions
+@implements IDisposable
+@rendermode InteractiveServer
+@inject NavigationManager Navigation
 
-<PageTitle>Locked out</PageTitle>
+<PageTitle>Cuenta Bloqueada</PageTitle>
 
-<header>
-    <h1 class="text-danger">Locked out</h1>
-    <p class="text-danger">This account has been locked out, please try again later.</p>
-</header>
+<div class="container min-h-100 d-flex flex-column justify-content-center py-5">
+    <div class="row justify-content-center">
+        <section class="col-lg-6 text-center">
+            <h1 class="display-4 fw-bold text-danger mb-3">
+                Cuenta Temporalmente Bloqueada
+                <i class="bi bi-shield-lock" style="font-size: 4rem;"></i>
+            </h1>
+
+            <div class="alert alert-danger mb-4">
+                <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                <strong>Seguridad activada:</strong> Demasiados intentos fallidos de inicio de sesión.
+            </div>
+
+            <div class="mb-4 text-start bg-light p-4 rounded-3">
+                <h4 class="h5 fw-bold mb-3"><i class="bi bi-info-circle-fill text-info me-2"></i>¿Qué hacer ahora?</h4>
+                <ul class="mb-0">
+                    <li class="mb-2">Espera el tiempo indicado para volver a intentar</li>
+                    <li class="mb-2">Si olvidaste tu contraseña, puedes restablecerla ahora</li>
+                    <li>Contacta al administrador si necesitas ayuda inmediata</li>
+                </ul>
+            </div>
+
+            <div class="d-grid gap-2 d-md-flex justify-content-md-center mt-4">
+                <button href="/Account/ForgotPassword" class="btn btn-danger px-4">
+                    <i class="bi bi-key-fill me-2"></i>Restablecer contraseña
+                </button>
+
+                <button class="btn btn-outline-secondary px-4"
+                        disabled="@(TimeLeft.Minutes > 0)"
+                        @onclick="@(() => { if (TimeLeft.Minutes <= 0) Navigation.NavigateTo("/Account/Login"); })">
+                    <i class="bi bi-house-door me-2"></i>Volver a intentarlo
+                </button>
+            </div>
+        </section>
+
+        <section class="col-5 text-center">
+            <div class="mb-4 p-3 bg-light rounded-3">
+                <p class="mb-1">Tiempo restante de bloqueo:</p>
+                <div class="display-4 fw-bold text-primary">
+                    <span>@TimeLeft.Minutes.ToString("00")</span>:<span>@TimeLeft.Seconds.ToString("00")</span>
+                </div>
+                <small class="text-muted">(Configurado en @IdentityOptions.Value.Lockout.DefaultLockoutTimeSpan.Minutes minutos)</small>
+            </div>
+            <img src="/svg/undraw_wait-in-line_fbdq.svg" class="img-fluid" alt="Página bloqueada por acceso" />
+        </section>
+    </div>
+</div>
+
+<script>
+    console.log(TimeLeft.Minutes);
+</script>
+
+@code {
+    private TimeSpan TimeLeft { get; set; }
+    private CancellationTokenSource? _cancellationTokenSource;
+    private DateTime lockoutEndTime;
+
+    protected override void OnInitialized()
+    {
+        // Configurar el tiempo inicial
+        var lockoutDuration = IdentityOptions.Value.Lockout.DefaultLockoutTimeSpan;
+        lockoutEndTime = DateTime.Now.Add(lockoutDuration);
+        TimeLeft = lockoutDuration;
+
+        StartCountdownTimer();
+    }
+
+    private async void StartCountdownTimer()
+    {
+        _cancellationTokenSource = new CancellationTokenSource();
+        var token = _cancellationTokenSource.Token;
+        
+        try
+        {
+            while (!token.IsCancellationRequested)
+            {
+                // Actualizar el tiempo restante
+                TimeLeft = lockoutEndTime - DateTime.Now;
+                
+                // Verificar si el tiempo ha terminado
+                if (TimeLeft.TotalSeconds <= 0)
+                {
+                    TimeLeft = TimeSpan.Zero;
+                    break;
+                }
+
+                // Actualizar la UI
+                await InvokeAsync(StateHasChanged);
+                await Task.Delay(1000, token);
+            }
+        }
+        catch (TaskCanceledException)
+        {
+            // La tarea fue cancelada, no es un error
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error en el temporizador: {ex.Message}");
+        }
+    }
+
+    public void Dispose() => _cancellationTokenSource?.Cancel();
+}

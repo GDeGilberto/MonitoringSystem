@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Web.Components;
 using Web.Components.Account;
+using System;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -35,6 +36,48 @@ builder.Services.AddIdentityCore<ApplicationUser>(options => options.SignIn.Requ
     .AddEntityFrameworkStores<AppDbContext>()
     .AddSignInManager()
     .AddDefaultTokenProviders();
+
+// Configuración completa de Identity
+builder.Services.Configure<IdentityOptions>(options =>
+{
+    // Configuración de contraseñas
+    options.Password.RequireDigit = true;                     // Requiere al menos un número
+    options.Password.RequireLowercase = true;                 // Requiere al menos una minúscula
+    options.Password.RequireUppercase = true;                 // Requiere al menos una mayúscula
+    options.Password.RequireNonAlphanumeric = true;           // Requiere al menos un caracter especial
+    options.Password.RequiredLength = 8;                      // Longitud mínima de 8 caracteres
+    options.Password.RequiredUniqueChars = 1;                 // Requiere caracteres únicos
+
+    // Configuración de bloqueo de cuenta
+    options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(1);  // Duración del bloqueo: 15 minutos
+    options.Lockout.MaxFailedAccessAttempts = 5;                        // Intentos fallidos antes de bloqueo
+    options.Lockout.AllowedForNewUsers = true;                          // Habilitar bloqueo para nuevos usuarios
+
+    // Configuración del usuario
+    options.User.AllowedUserNameCharacters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._@+"; // Caracteres permitidos en nombres de usuario
+    options.User.RequireUniqueEmail = true;                             // Correos electrónicos deben ser únicos
+
+    // Configuración de inicio de sesión
+    options.SignIn.RequireConfirmedEmail = true;                        // Requiere correo confirmado para iniciar sesión
+    options.SignIn.RequireConfirmedPhoneNumber = false;                 // No requiere teléfono confirmado
+    options.SignIn.RequireConfirmedAccount = true;                      // Requiere confirmación de cuenta
+
+    // Configuración de tokens
+    options.Tokens.EmailConfirmationTokenProvider = TokenOptions.DefaultEmailProvider;
+    options.Tokens.PasswordResetTokenProvider = TokenOptions.DefaultProvider;
+});
+
+// Configurar opciones de cookies
+builder.Services.ConfigureApplicationCookie(options =>
+{
+    options.Cookie.HttpOnly = true;                           // La cookie solo es accesible por HTTP (no JavaScript)
+    options.Cookie.SecurePolicy = CookieSecurePolicy.Always; // Requiere HTTPS para enviar la cookie
+    options.ExpireTimeSpan = TimeSpan.FromDays(14);           // Duración de la cookie
+    options.SlidingExpiration = true;                         // Renovar el tiempo de expiración con cada solicitud
+    options.LoginPath = "/Account/Login";                     // Ruta de inicio de sesión
+    options.AccessDeniedPath = "/Account/AccessDenied";       // Ruta de acceso denegado
+    options.LogoutPath = "/Account/Logout";                   // Ruta de cierre de sesión
+});
 
 builder.Services.AddSingleton<IEmailSender<ApplicationUser>, IdentityNoOpEmailSender>();
 
