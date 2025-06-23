@@ -18,7 +18,7 @@
 
             <div class="alert alert-danger mb-4">
                 <i class="bi bi-exclamation-triangle-fill me-2"></i>
-                <strong>Seguridad activada:</strong> Demasiados intentos fallidos de inicio de sesión.
+                Demasiados intentos fallidos de inicio de sesión.
             </div>
 
             <div class="mb-4 text-start bg-light p-4 rounded-3">
@@ -31,13 +31,13 @@
             </div>
 
             <div class="d-grid gap-2 d-md-flex justify-content-md-center mt-4">
-                <button href="/Account/ForgotPassword" class="btn btn-danger px-4">
+                <button href="/Account/ForgotPassword" class="btn btn-outline-danger px-4">
                     <i class="bi bi-key-fill me-2"></i>Restablecer contraseña
                 </button>
 
-                <button class="btn btn-outline-secondary px-4"
-                        disabled="@(TimeLeft.Minutes > 0)"
-                        @onclick="@(() => { if (TimeLeft.Minutes <= 0) Navigation.NavigateTo("/Account/Login"); })">
+                <button class="btn btn-primary px-4"
+                        disabled="@(isDisabledButton)"
+                        @onclick="@(() => { if (!isDisabledButton) Navigation.NavigateTo("/Account/Login"); })">
                     <i class="bi bi-house-door me-2"></i>Volver a intentarlo
                 </button>
             </div>
@@ -56,14 +56,12 @@
     </div>
 </div>
 
-<script>
-    console.log(TimeLeft.Minutes);
-</script>
 
 @code {
     private TimeSpan TimeLeft { get; set; }
     private CancellationTokenSource? _cancellationTokenSource;
     private DateTime lockoutEndTime;
+    private bool isDisabledButton = true;
 
     protected override void OnInitialized()
     {
@@ -79,21 +77,23 @@
     {
         _cancellationTokenSource = new CancellationTokenSource();
         var token = _cancellationTokenSource.Token;
-        
+
         try
         {
             while (!token.IsCancellationRequested)
             {
                 // Actualizar el tiempo restante
                 TimeLeft = lockoutEndTime - DateTime.Now;
-                
+
                 // Verificar si el tiempo ha terminado
                 if (TimeLeft.TotalSeconds <= 0)
                 {
                     TimeLeft = TimeSpan.Zero;
+                    isDisabledButton = false;
+                    StateHasChanged();
                     break;
                 }
-
+                
                 // Actualizar la UI
                 await InvokeAsync(StateHasChanged);
                 await Task.Delay(1000, token);
