@@ -7,7 +7,9 @@ using Infrastructure.Communication;
 using Infrastructure.Data;
 using Infrastructure.Jobs;
 using Infrastructure.Models;
+using Infrastructure.Presenters;
 using Infrastructure.Repositories;
+using Infrastructure.ViewModels;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -108,10 +110,19 @@ builder.Services.AddSingleton<ISerialPortService, SerialPortManager>();
 
 // Application Services
 builder.Services.AddScoped<DescargasService<DescargasEntity>>();
+builder.Services.AddScoped<InventarioService<InventarioEntity, InventarioViewModel>>();
+
+// Presenters
+builder.Services.AddScoped<IPresenter<InventarioEntity, InventarioViewModel>, InventarioPresenter>();
 
 // Job Services
 builder.Services.AddScoped<ParceDeliveryReport>();
+builder.Services.AddScoped<ParseTankInventoryReport>();
 builder.Services.AddScoped<DescargasJobs>();
+builder.Services.AddScoped<InventarioJob>();
+
+// Inventory Update Service
+builder.Services.AddSingleton<Web.Services.IInventoryUpdateService, Web.Services.InventoryUpdateService>();
 
 // Add services to the container.
 builder.Services.AddRazorComponents()

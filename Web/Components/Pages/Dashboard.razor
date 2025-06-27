@@ -27,11 +27,23 @@
             <BarChartComponent Tanques="ListTanques" />
             <TanquesComponent Tanques="ListTanques" IsLoading="IsLoadingTanques">
                 <LabelUpdate>
-                    <div>
+                    <div class="d-flex align-items-center gap-2 flex-wrap">
                         <span>@dateUpdate</span>
-                        <button class="btn btn-outline-info" @onclick="UpdateInventory">
+                        <button class="btn btn-outline-info" @onclick="ClickUpdateInventario">
                             <i class="bi bi-arrow-clockwise"></i>
                         </button>
+                        @if (InventoryUpdateService.IsRunning)
+                        {
+                            <button class="btn btn-outline-warning" @onclick="ToggleAutoUpdate" title="Detener auto-actualización">
+                                <i class="bi bi-pause"></i>
+                            </button>
+                        }
+                        else
+                        {
+                            <button class="btn btn-outline-success" @onclick="ToggleAutoUpdate" title="Iniciar auto-actualización">
+                                <i class="bi bi-play"></i>
+                            </button>
+                        }
                     </div>
                 </LabelUpdate>
             </TanquesComponent>
