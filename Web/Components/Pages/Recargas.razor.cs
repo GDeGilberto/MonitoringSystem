@@ -1,6 +1,7 @@
 ﻿using Application.UseCases;
 using BlazorDateRangePicker;
 using Domain.Entities;
+using Infrastructure.Jobs;
 using Infrastructure.Models;
 using Infrastructure.ViewModels;
 using Microsoft.AspNetCore.Components;
@@ -10,6 +11,7 @@ namespace Web.Components.Pages
 {
     public partial class Recargas : ComponentBase
     {
+        [Inject] private DescargasJobs? _descargasJobs { get; set; }
         [Inject] private GetDescargaSearchUseCase<ProcDescargaModel> descargaSearchUseCase { get; set; } = default!;
         [Inject] private GetEstacionesByIdUseCase estacionesByIdUseCase { get; set; } = default!;
         [Inject] private IConfiguration Configuration { get; set; } = default!;
@@ -68,6 +70,26 @@ namespace Web.Components.Pages
             BuildViewModel();
 
             isLoadingTable = false;
+        }
+
+        public async Task ClickUpdateRecargas()
+        {
+            isLoadingTable = true;
+            try
+            {
+                await _descargasJobs!.Execute();
+                
+                await GetData();
+                BuildViewModel();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error updating recargas: {ex.Message}");
+            }
+            finally
+            {
+                isLoadingTable = false;
+            }
         }
 
         private async Task GetData()

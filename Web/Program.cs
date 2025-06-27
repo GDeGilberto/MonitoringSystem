@@ -1,8 +1,11 @@
 using Application.Interfaces;
+using Application.Services;
 using Application.UseCases;
 using BlazorDateRangePicker;
 using Domain.Entities;
+using Infrastructure.Communication;
 using Infrastructure.Data;
+using Infrastructure.Jobs;
 using Infrastructure.Models;
 using Infrastructure.Repositories;
 using Microsoft.AspNetCore.Components.Authorization;
@@ -88,14 +91,28 @@ builder.Services.AddDateRangePicker(config =>
     };
 });
 
+// Repository registrations
 builder.Services.AddScoped<IRepositorySearch<ProcDescargaModel, DescargasEntity>, DescargasRepository>();
 builder.Services.AddScoped<IRepository<EstacionesEntity>, EstacionesRepository>();
 builder.Services.AddScoped<IRepository<InventarioEntity>, InventarioRepository>();
+builder.Services.AddScoped<IRepository<DescargasEntity>, DescargasRepository>();
+builder.Services.AddScoped<IRepositorySearch<ProcInventarioModel, InventarioEntity>, InventarioRepository>();
+
+// Use Case registrations
 builder.Services.AddScoped<GetDescargaSearchUseCase<ProcDescargaModel>>();
 builder.Services.AddScoped<GetLatestInventarioByStationUseCase<ProcInventarioModel>>();
 builder.Services.AddScoped<GetEstacionesByIdUseCase>();
 
-builder.Services.AddScoped<IRepositorySearch<ProcInventarioModel, InventarioEntity>, InventarioRepository>();
+// Serial Port Services
+builder.Services.AddSingleton<ISerialPortService, SerialPortManager>();
+
+// Application Services
+builder.Services.AddScoped<DescargasService<DescargasEntity>>();
+
+// Job Services
+builder.Services.AddScoped<ParceDeliveryReport>();
+builder.Services.AddScoped<DescargasJobs>();
+
 // Add services to the container.
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
