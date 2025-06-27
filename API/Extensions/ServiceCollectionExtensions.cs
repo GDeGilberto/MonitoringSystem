@@ -5,7 +5,6 @@ using Domain.Entities;
 using Infrastructure.Communication;
 using Infrastructure.Data;
 using Infrastructure.Dtos;
-using Infrastructure.Jobs;
 using Infrastructure.Mappers;
 using Infrastructure.Models;
 using Infrastructure.Presenters;
@@ -27,9 +26,7 @@ namespace API.Extensions
         
         public static IServiceCollection AddSerialPortServices(this IServiceCollection services)
         {
-            services.AddSingleton<ISerialPortService>(provider =>
-                new SerialPortService());
-            services.AddSingleton<ISerialPortService, SerialPortService>();
+            // Register SerialPortManager as singleton to avoid conflicts and support async operations
             services.AddSingleton<ISerialPortService, SerialPortManager>();
             
             return services;
@@ -40,7 +37,6 @@ namespace API.Extensions
             services.AddScoped<IRepository<DescargasEntity>, DescargasRepository>();
             services.AddScoped<IRepository<EstacionesEntity>, EstacionesRepository>();
             services.AddScoped<IRepository<InventarioEntity>, InventarioRepository>();
-            services.AddScoped<IRepository<DescargasEntity>, DescargasRepository>();
             services.AddScoped<IRepositorySearch<ProcDescargaModel, DescargasEntity>, DescargasRepository>();
             services.AddScoped<IRepositorySearch<ProcInventarioModel, InventarioEntity>, InventarioRepository>();
             
@@ -76,16 +72,6 @@ namespace API.Extensions
             services.AddScoped<GetInventariosUseCase>();
             services.AddScoped<GetInventarioByIdUseCase>();
             services.AddScoped<GetLatestInventarioByStationUseCase<ProcInventarioModel>>();
-            
-            return services;
-        }
-        
-        public static IServiceCollection AddJobs(this IServiceCollection services)
-        {
-            services.AddScoped<ParceDeliveryReport>();
-            services.AddScoped<ParseTankInventoryReport>();
-            services.AddScoped<InventarioJob>();
-            services.AddScoped<DescargasJobs>();
             
             return services;
         }

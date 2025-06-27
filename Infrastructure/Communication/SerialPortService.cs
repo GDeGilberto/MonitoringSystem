@@ -1,4 +1,5 @@
 ﻿using Application.Interfaces;
+using Infrastructure.Models;
 using System.IO.Ports;
 using System.Text;
 
@@ -30,6 +31,16 @@ namespace Infrastructure.Communication
 
         public void Initialize(string portName, int baudRate)
         {
+            var settings = new SerialPortSettings
+            {
+                PortName = portName,
+                BaudRate = baudRate
+            };
+            Initialize(settings);
+        }
+
+        public void Initialize(SerialPortSettings settings)
+        {
             //if (_disposed)
             //    throw new ObjectDisposedException("El puerto serial ha sido cerrado");
 
@@ -49,11 +60,23 @@ namespace Infrastructure.Communication
 
                 try
                 {
-                    Console.WriteLine($"Intentando inicializar puerto {portName}...");
+                    Console.WriteLine($"Intentando inicializar puerto {settings.PortName}...");
+                    Console.WriteLine($"Configuración completa:");
+                    Console.WriteLine($"  - Puerto: {settings.PortName}");
+                    Console.WriteLine($"  - BaudRate: {settings.BaudRate}");
+                    Console.WriteLine($"  - DataBits: {settings.DataBits}");
+                    Console.WriteLine($"  - Parity: {settings.Parity}");
+                    Console.WriteLine($"  - StopBits: {settings.StopBits}");
+                    Console.WriteLine($"  - Handshake: {settings.Handshake}");
 
-                    _serialPort = new SerialPort(portName, baudRate)
+                    _serialPort = new SerialPort(settings.PortName, settings.BaudRate)
                     {
-                        Handshake = Handshake.None
+                        DataBits = settings.DataBits,
+                        Parity = settings.GetParity(),
+                        StopBits = settings.GetStopBits(),
+                        Handshake = settings.GetHandshake(),
+                        ReadTimeout = settings.ReadTimeout,
+                        WriteTimeout = settings.WriteTimeout
                     };
 
                     _serialPort.DataReceived += SerialPort_DataReceived;
@@ -62,9 +85,9 @@ namespace Infrastructure.Communication
                     _serialPort.Open();
                     _initialized = true;
 
-                    Console.WriteLine($"Puerto {portName} inicializado correctamente");
+                    Console.WriteLine($"Puerto {settings.PortName} inicializado correctamente");
                     Console.WriteLine($"Estado: {_serialPort.IsOpen}");
-                    Console.WriteLine($"Configuración: {baudRate} baud, {_serialPort.Parity}, {_serialPort.DataBits} bits de datos, {_serialPort.StopBits} bits de parada");
+                    Console.WriteLine($"Configuración aplicada: {settings.BaudRate} baud, {_serialPort.Parity}, {_serialPort.DataBits} bits de datos, {_serialPort.StopBits} bits de parada, Handshake: {_serialPort.Handshake}");
                 }
                 catch (Exception ex)
                 {

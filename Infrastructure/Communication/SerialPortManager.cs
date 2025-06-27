@@ -1,4 +1,5 @@
 using Application.Interfaces;
+using Infrastructure.Models;
 using System.IO.Ports;
 using System.Text;
 
@@ -28,10 +29,20 @@ namespace Infrastructure.Communication
 
         public async Task<string> SendCommandAsync(string portName, int baudRate, string command, int timeoutMs = 3000)
         {
+            var settings = new SerialPortSettings
+            {
+                PortName = portName,
+                BaudRate = baudRate
+            };
+            return await SendCommandAsync(settings, command, timeoutMs);
+        }
+
+        public async Task<string> SendCommandAsync(SerialPortSettings settings, string command, int timeoutMs = 3000)
+        {
             await _semaphore.WaitAsync();
             try
             {
-                Initialize(portName, baudRate);
+                Initialize(settings);
 
                 _responseTcs = new TaskCompletionSource<string>(TaskCreationOptions.RunContinuationsAsynchronously);
                 Write(command);
@@ -51,6 +62,16 @@ namespace Infrastructure.Communication
 
         public void Initialize(string portName, int baudRate)
         {
+            var settings = new SerialPortSettings
+            {
+                PortName = portName,
+                BaudRate = baudRate
+            };
+            Initialize(settings);
+        }
+
+        public void Initialize(SerialPortSettings settings)
+        {
             if (_serialPort != null)
             {
                 if (_serialPort.IsOpen)
@@ -61,14 +82,32 @@ namespace Infrastructure.Communication
                 _disposed = false;
             }
 
-            _serialPort = new SerialPort(portName, baudRate)
+            Console.WriteLine($"SerialPortManager: Inicializando puerto {settings.PortName}...");
+            Console.WriteLine($"Configuración completa:");
+            Console.WriteLine($"  - Puerto: {settings.PortName}");
+            Console.WriteLine($"  - BaudRate: {settings.BaudRate}");
+            Console.WriteLine($"  - DataBits: {settings.DataBits}");
+            Console.WriteLine($"  - Parity: {settings.Parity}");
+            Console.WriteLine($"  - StopBits: {settings.StopBits}");
+            Console.WriteLine($"  - Handshake: {settings.Handshake}");
+
+            _serialPort = new SerialPort(settings.PortName, settings.BaudRate)
             {
-                Handshake = Handshake.None
+                DataBits = settings.DataBits,
+                Parity = settings.GetParity(),
+                StopBits = settings.GetStopBits(),
+                Handshake = settings.GetHandshake(),
+                ReadTimeout = settings.ReadTimeout,
+                WriteTimeout = settings.WriteTimeout
             };
+
             _serialPort.DataReceived += SerialPort_DataReceived;
             _inactivityTimer = new Timer(InactivityTimerElapsed, null, Timeout.Infinite, Timeout.Infinite);
             _serialPort.Open();
             _initialized = true;
+
+            Console.WriteLine($"SerialPortManager: Puerto {settings.PortName} inicializado correctamente");
+            Console.WriteLine($"Configuración aplicada: {settings.BaudRate} baud, {_serialPort.Parity}, {_serialPort.DataBits} bits de datos, {_serialPort.StopBits} bits de parada, Handshake: {_serialPort.Handshake}");
         }
 
         private void SerialPort_DataReceived(object sender, SerialDataReceivedEventArgs e)
