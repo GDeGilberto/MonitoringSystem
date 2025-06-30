@@ -7,41 +7,41 @@ using Infrastructure.Models;
 using Infrastructure.ViewModels;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace Infrastructure.Jobs
 {
     public class InventarioJob
     {
         private readonly IConfiguration _config;
-        private ISerialPortService _serialPortService;
-        private ParseTankInventoryReport _parseTankInventoryReport;
+        private readonly ISerialPortService _serialPortService;
+        private readonly ParseTankInventoryReport _parseTankInventoryReport;
         private readonly IServiceScopeFactory _scopeFactory;
+        private readonly ILogger<InventarioJob> _logger;
 
         public InventarioJob(
             IConfiguration config,
             ISerialPortService serialPortService,
             ParseTankInventoryReport parseTankInventoryReport,
-            IServiceScopeFactory scopeFactory)
+            IServiceScopeFactory scopeFactory,
+            ILogger<InventarioJob> logger)
         {
             _config = config;
             _serialPortService = serialPortService;
             _parseTankInventoryReport = parseTankInventoryReport;
             _scopeFactory = scopeFactory;
+            _logger = logger;
         }
 
         public async Task Execute()
         {
-            Console.WriteLine("=== INICIO DE EJECUCIÓN InventarioJob ===");
-            Console.WriteLine($"Timestamp: {DateTime.Now:yyyy-MM-dd HH:mm:ss.fff}");
+            _logger.LogInformation("=== INICIO DE EJECUCIÓN InventarioJob ===");
 
             try
             {
-                // 1. Validación y lectura de configuración
-                Console.WriteLine("1. Leyendo configuración...");
                 var idEstacionStr = _config["Estacion:Id"];
-                string command = "i20100";
+                const string command = "i20100";
 
-                // Crear objeto de configuración del puerto serial desde appsettings
                 var serialPortSettings = new SerialPortSettings
                 {
                     PortName = _config["SerialPort:PortName"] ?? "COM1",
@@ -54,33 +54,24 @@ namespace Infrastructure.Jobs
                     WriteTimeout = int.TryParse(_config["SerialPort:WriteTimeout"], out int writeTimeout) ? writeTimeout : 500
                 };
 
-                Console.WriteLine($"   - Puerto configurado: {serialPortSettings.PortName}");
-                Console.WriteLine($"   - BaudRate configurado: {serialPortSettings.BaudRate}");
-                Console.WriteLine($"   - DataBits configurado: {serialPortSettings.DataBits}");
-                Console.WriteLine($"   - Parity configurado: {serialPortSettings.Parity}");
-                Console.WriteLine($"   - StopBits configurado: {serialPortSettings.StopBits}");
-                Console.WriteLine($"   - Handshake configurado: {serialPortSettings.Handshake}");
-                Console.WriteLine($"   - ReadTimeout configurado: {serialPortSettings.ReadTimeout}ms");
-                Console.WriteLine($"   - WriteTimeout configurado: {serialPortSettings.WriteTimeout}ms");
-                Console.WriteLine($"   - ID Estación configurado: {idEstacionStr ?? "NULL"}");
-                Console.WriteLine($"   - Comando a enviar: {command}");
+                _logger.LogInformation("Configuración - Puerto: {Port}, BaudRate: {BaudRate}, Estación: {Estacion}", 
+                    serialPortSettings.PortName, serialPortSettings.BaudRate, idEstacionStr);
 
-                // Validaciones de configuración
                 if (string.IsNullOrWhiteSpace(serialPortSettings.PortName))
                 {
-                    Console.WriteLine("ERROR: Puerto serial no configurado en appsettings");
+                    _logger.LogError("Puerto serial no configurado en appsettings");
                     return;
                 }
 
                 if (serialPortSettings.BaudRate <= 0)
                 {
-                    Console.WriteLine($"ERROR: BaudRate inválido: {serialPortSettings.BaudRate}");
+                    _logger.LogError("BaudRate inválido: {BaudRate}", serialPortSettings.BaudRate);
                     return;
                 }
 
                 if (!int.TryParse(idEstacionStr, out int idEstacion))
                 {
-                    Console.WriteLine($"ERROR: ID de estación inválido: {idEstacionStr}");
+                    _logger.LogError("ID de estación inválido: {IdEstacion}", idEstacionStr);
                     return;
                 }
 
@@ -90,7 +81,7 @@ namespace Infrastructure.Jobs
                 Console.WriteLine("2. Verificando servicio serial...");
                 if (_serialPortService == null)
                 {
-                    Console.WriteLine("ERROR: _serialPortService es NULL");
+                    _logger.LogError("SerialPortService es NULL");
                     return;
                 }
 
@@ -99,112 +90,56 @@ namespace Infrastructure.Jobs
                 // Verificar si es SerialPortManager para usar funcionalidad async
                 if (_serialPortService is SerialPortManager serialPortManager)
                 {
-                    Console.WriteLine("   ✓ Usando SerialPortManager para comunicación async");
+                    _logger.LogInformation("Usando SerialPortManager para comunicación async");
 
                     string response;
                     try
                     {
                         response = await serialPortManager.SendCommandAsync(serialPortSettings, command, timeoutMs: 10000);
-                        
-                        Console.WriteLine("   ✓ Comando enviado y respuesta recibida");
-                        Console.WriteLine($"   - Longitud de respuesta: {response?.Length ?? 0} caracteres");
-                        
-                        if (!string.IsNullOrWhiteSpace(response))
-                        {
-                            // Mostrar los primeros y últimos caracteres para debug
-                            var preview = response.Length > 100 
-                                ? $"{response[..50]}...{response[^50..]}" 
-                                : response;
-                            Console.WriteLine($"   - Vista previa de respuesta: {preview}");
+                        _logger.LogInformation("Comando enviado correctamente. Respuesta: {Length} caracteres", response?.Length ?? 0);
                         }
-                    }
-                    catch (TaskCanceledException tcEx)
+                    catch (TaskCanceledException)
                     {
-                        Console.WriteLine($"ERROR: Timeout en comunicación serial después de 10 segundos");
-                        Console.WriteLine($"   - Mensaje: {tcEx.Message}");
-                        Console.WriteLine("   - Posible causa: Dispositivo no responde o puerto ocupado");
+                        _logger.LogError("Timeout en comunicación serial después de 10 segundos");
                         throw;
                     }
-                    catch (InvalidOperationException ioEx)
+                    catch (Exception ex)
                     {
-                        Console.WriteLine($"ERROR: Operación inválida en puerto serial");
-                        Console.WriteLine($"   - Mensaje: {ioEx.Message}");
-                        Console.WriteLine("   - Posible causa: Puerto no disponible o ya en uso");
-                        throw;
-                    }
-                    catch (UnauthorizedAccessException uaEx)
-                    {
-                        Console.WriteLine($"ERROR: Acceso no autorizado al puerto serial");
-                        Console.WriteLine($"   - Mensaje: {uaEx.Message}");
-                        Console.WriteLine("   - Posible causa: Puerto en uso por otra aplicación");
-                        throw;
-                    }
-                    catch (Exception commEx)
-                    {
-                        Console.WriteLine($"ERROR: Excepción no controlada en comunicación serial");
-                        Console.WriteLine($"   - Tipo: {commEx.GetType().Name}");
-                        Console.WriteLine($"   - Mensaje: {commEx.Message}");
-                        Console.WriteLine($"   - StackTrace: {commEx.StackTrace}");
+                        _logger.LogError(ex, "Error en comunicación serial");
                         throw;
                     }
 
-                    // 4. Validación de respuesta
-                    Console.WriteLine("4. Validando respuesta...");
                     if (string.IsNullOrWhiteSpace(response))
                     {
-                        Console.WriteLine("ERROR: No se recibió respuesta del puerto serial.");
-                        Console.WriteLine("   - La respuesta está vacía o es null");
+                        _logger.LogWarning("No se recibió respuesta del puerto serial");
                         return;
                     }
 
-                    Console.WriteLine("   ✓ Respuesta recibida y no está vacía");
-
-                    // 5. Creación de scope para servicios
-                    Console.WriteLine("5. Creando scope para servicios...");
                     using var scope = _scopeFactory.CreateScope();
                     var inventarioService = scope.ServiceProvider.GetRequiredService<InventarioService<InventarioEntity, InventarioViewModel>>();
                     
                     if (inventarioService == null)
                     {
-                        Console.WriteLine("ERROR: No se pudo obtener InventarioService del scope");
+                        _logger.LogError("No se pudo obtener InventarioService del scope");
                         return;
                     }
 
-                    Console.WriteLine("   ✓ Scope creado e InventarioService obtenido");
-
-                    // 6. Parsing de la respuesta
-                    Console.WriteLine("6. Procesando respuesta del dispositivo...");
                     TankReport result;
-                    
                     try
                     {
                         result = _parseTankInventoryReport.Execute(response);
-                        Console.WriteLine("   ✓ Respuesta parseada correctamente");
-                        Console.WriteLine($"   - Fecha del reporte: {result.Date}");
-                        Console.WriteLine($"   - Número de tanques encontrados: {result.Tanks?.Count ?? 0}");
+                        _logger.LogInformation("Respuesta parseada correctamente. Fecha: {Date}, Tanques: {Count}", 
+                            result.Date, result.Tanks?.Count ?? 0);
                     }
-                    catch (ArgumentException argEx)
+                    catch (Exception ex)
                     {
-                        Console.WriteLine($"ERROR: Error en el formato de los datos recibidos");
-                        Console.WriteLine($"   - Mensaje: {argEx.Message}");
-                        Console.WriteLine($"   - Respuesta recibida: {response}");
-                        throw;
-                    }
-                    catch (Exception parseEx)
-                    {
-                        Console.WriteLine($"ERROR: Error al parsear la respuesta");
-                        Console.WriteLine($"   - Tipo: {parseEx.GetType().Name}");
-                        Console.WriteLine($"   - Mensaje: {parseEx.Message}");
-                        Console.WriteLine($"   - Respuesta recibida: {response}");
+                        _logger.LogError(ex, "Error al parsear la respuesta");
                         throw;
                     }
 
-                    // 7. Validación de tanques
-                    Console.WriteLine("7. Validando datos de tanques...");
                     if (result.Tanks == null || !result.Tanks.Any())
                     {
-                        Console.WriteLine("WARNING: No se encontraron datos de tanques en la respuesta.");
-                        Console.WriteLine("   - Posible causa: Respuesta vacía del dispositivo o formato incorrecto");
+                        _logger.LogWarning("No se encontraron datos de tanques en la respuesta");
                         return;
                     }
 
@@ -239,63 +174,31 @@ namespace Infrastructure.Jobs
                             successCount++;
                             Console.WriteLine($"   ✓ Inventario guardado exitosamente para tanque {tank.NoTank}");
                         }
-                        catch (Exception dbEx)
+                        catch (Exception ex)
                         {
                             errorCount++;
-                            Console.WriteLine($"   ✗ Error al guardar inventario para tanque {tank.NoTank}:");
-                            Console.WriteLine($"     - Tipo: {dbEx.GetType().Name}");
-                            Console.WriteLine($"     - Mensaje: {dbEx.Message}");
-                            
-                            if (dbEx.InnerException != null)
-                            {
-                                Console.WriteLine($"     - Excepción interna: {dbEx.InnerException.Message}");
+                            _logger.LogError(ex, "Error al guardar inventario para tanque {NoTanque}", tank.NoTank);
                             }
                         }
-                    }
 
-                    // 9. Resumen final
-                    Console.WriteLine("9. Resumen de ejecución:");
-                    Console.WriteLine($"   - Tanques procesados: {tankCount}");
-                    Console.WriteLine($"   - Guardados exitosamente: {successCount}");
-                    Console.WriteLine($"   - Errores: {errorCount}");
-                    Console.WriteLine("=== FIN DE EJECUCIÓN InventarioJob ===");
+                    _logger.LogInformation("Resumen: {TotalTanques} tanques procesados, {Exitosos} exitosos, {Errores} errores", 
+                        result.Tanks.Count, successCount, errorCount);
                 }
                 else
                 {
-                    Console.WriteLine($"ERROR: El servicio serial no es compatible con operaciones async");
-                    Console.WriteLine($"   - Tipo actual: {_serialPortService.GetType().Name}");
-                    Console.WriteLine($"   - Se requiere SerialPortManager para jobs");
-                    Console.WriteLine("   - Verifica la configuración de dependencias en ServiceCollectionExtensions");
+                    _logger.LogError("El servicio serial no es compatible con operaciones async. Tipo: {Type}", 
+                        _serialPortService.GetType().Name);
                     return;
                 }
             }
-            catch (TaskCanceledException)
-            {
-                Console.WriteLine("ERROR FINAL: La comunicación serial se ha cancelado por tiempo de espera agotado.");
-                Console.WriteLine("   - Verifica que el dispositivo esté conectado y funcionando");
-                Console.WriteLine("   - Verifica que el puerto COM esté disponible");
-                throw;
-            }
-            catch (ArgumentException ex)
-            {
-                Console.WriteLine($"ERROR FINAL: Error en el formato de los datos recibidos: {ex.Message}");
-                Console.WriteLine("   - La respuesta del dispositivo no tiene el formato esperado");
-                throw;
-            }
             catch (Exception ex)
             {
-                Console.WriteLine($"ERROR FINAL: Error durante la comunicación serial: {ex.Message}");
-                Console.WriteLine($"   - Tipo de excepción: {ex.GetType().Name}");
-                Console.WriteLine($"   - StackTrace: {ex.StackTrace}");
-                
-                if (ex.InnerException != null)
-                {
-                    Console.WriteLine($"   - Causa raíz: {ex.InnerException.Message}");
-                    Console.WriteLine($"   - Tipo de causa raíz: {ex.InnerException.GetType().Name}");
-                }
-                
-                Console.WriteLine("=== ERROR EN InventarioJob ===");
+                _logger.LogError(ex, "Error durante la ejecución del InventarioJob");
                 throw;
+            }
+            finally
+            {
+                _logger.LogInformation("=== FIN DE EJECUCIÓN InventarioJob ===");
             }
         }
     }

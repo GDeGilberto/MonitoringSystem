@@ -33,14 +33,8 @@ try
 
     var app = builder.Build();
 
-    Console.WriteLine($"API ejecutándose en el environment: {app.Environment.EnvironmentName}");
-
-    // Get the configured URLs
-    var urls = builder.Configuration["urls"] ?? builder.Configuration.GetSection("applicationUrl").Value;
-    if (!string.IsNullOrEmpty(urls))
-    {
-        Console.WriteLine($"API URLs configuradas: {urls}");
-    }
+    var logger = app.Services.GetRequiredService<ILogger<Program>>();
+    logger.LogInformation("API ejecutándose en el environment: {Environment}", app.Environment.EnvironmentName);
 
     // Listen for when the app actually starts to show real URLs
     app.Lifetime.ApplicationStarted.Register(() =>
@@ -52,17 +46,12 @@ try
 
             if (addressFeature?.Addresses.Any() == true)
             {
-                Console.WriteLine($"API ejecutándose en las URLs:");
-                foreach (var address in addressFeature.Addresses)
-                {
-                    Console.WriteLine($"  - {address}");
+                logger.LogInformation("API ejecutándose en las URLs: {Addresses}", string.Join(", ", addressFeature.Addresses));
                 }
-                Console.WriteLine("API iniciada correctamente y lista para recibir solicitudes.");
             }
-        }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error al obtener direcciones del servidor: {ex.Message}");
+            logger.LogWarning(ex, "Error al obtener direcciones del servidor");
         }
     });
 
@@ -82,17 +71,12 @@ try
 
     app.MapControllers();
 
-    Console.WriteLine("Iniciando servidor...");
+    logger.LogInformation("Iniciando servidor...");
     app.Run();
 }
 catch (Exception ex)
 {
-    Console.WriteLine($"Error crítico durante el inicio de la aplicación: {ex.Message}");
-    Console.WriteLine($"StackTrace: {ex.StackTrace}");
-
-    if (ex.InnerException != null)
-    {
-        Console.WriteLine($"Excepción interna: {ex.InnerException.Message}");
-        Console.WriteLine($"StackTrace interno");
-    }
+    var logger = new LoggerFactory().CreateLogger<Program>();
+    logger.LogCritical(ex, "Error crítico durante el inicio de la aplicación");
+    throw;
 }
