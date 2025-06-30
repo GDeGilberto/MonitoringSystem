@@ -29,11 +29,8 @@ namespace API.Controllers
         /// <summary>
         /// Autentica a un usuario y genera un token JWT
         /// </summary>
-        /// <param name="request">Credenciales del usuario (nombre de usuario y contraseña)</param>
+        /// <param name="request">Credenciales del usuario</param>
         /// <returns>Token JWT para autenticación</returns>
-        /// <response code="200">Retorna el token JWT generado exitosamente</response>
-        /// <response code="401">Si las credenciales son incorrectas o el usuario no está confirmado</response>
-        /// <response code="500">Si ocurrió un error interno al procesar la solicitud</response>
         [HttpPost("login")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -67,14 +64,12 @@ namespace API.Controllers
         /// <summary>
         /// Nombre de usuario o correo electrónico
         /// </summary>
-        /// <example>usuario@ejemplo.com</example>
         [Required]
         public string Username { get; set; }
         
         /// <summary>
         /// Contraseña del usuario
         /// </summary>
-        /// <example>Contraseña123!</example>
         [Required]
         public string Password { get; set; }
     }

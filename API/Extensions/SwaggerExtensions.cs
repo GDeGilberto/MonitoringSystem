@@ -182,17 +182,6 @@ Para comenzar a usar esta API:
                 
                 // Ocultar los modelos por defecto en la parte inferior
                 c.DefaultModelsExpandDepth(-1);
-                
-                // Personalizar el tema
-                c.HeadContent = @"
-                <style>
-                    .swagger-ui .topbar { background-color: #1a365d; }
-                    .swagger-ui .info .title { font-size: 24px; }
-                    .swagger-ui .opblock-tag { font-size: 18px; }
-                    .swagger-ui .opblock .opblock-summary-operation-id { font-size: 14px; }
-                    .swagger-ui .btn.authorize { background-color: #4c9aff; }
-                    .swagger-ui .btn.authorize:hover { background-color: #2684ff; }
-                </style>";
             });
 
             return app;

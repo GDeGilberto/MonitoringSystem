@@ -9,10 +9,6 @@ namespace API.Controllers
     /// <summary>
     /// Controlador para la gestión de estaciones de monitoreo
     /// </summary>
-    /// <remarks>
-    /// Este controlador permite realizar operaciones sobre las estaciones de monitoreo.
-    /// Las estaciones son puntos físicos donde se encuentran los tanques de combustible.
-    /// </remarks>
     [ApiController]
     [Route("api/[controller]")]
     [Authorize]
@@ -36,25 +32,7 @@ namespace API.Controllers
         /// <summary>
         /// Obtiene todas las estaciones de monitoreo
         /// </summary>
-        /// <remarks>
-        /// Este endpoint retorna un listado completo de todas las estaciones registradas en el sistema.
-        /// Si no existen estaciones, se devuelve un código 204 No Content.
-        /// 
-        /// Las estaciones incluyen información como:
-        /// - ID único de la estación
-        /// - Nombre de la estación
-        /// - Ubicación geográfica
-        /// - Estado operativo
-        /// 
-        /// El listado está ordenado alfabéticamente por nombre de estación.
-        /// </remarks>
         /// <returns>Lista de todas las estaciones</returns>
-        /// <response code="200">Retorna la lista de estaciones</response>
-        /// <response code="204">Si no existen estaciones en el sistema</response>
-        /// <response code="401">Si el usuario no está autenticado</response>
-        /// <response code="403">Si el usuario no tiene permisos para acceder a este recurso</response>
-        /// <response code="500">Si ocurrió un error interno al procesar la solicitud</response>
-        /// <response code="503">Si hay un problema de conexión con la base de datos</response>
         [HttpGet]
         [SwaggerOperation(
             Summary = "Obtiene todas las estaciones",
@@ -84,27 +62,8 @@ namespace API.Controllers
         /// <summary>
         /// Obtiene una estación por su ID
         /// </summary>
-        /// <remarks>
-        /// Este endpoint retorna información detallada de una estación específica según su ID.
-        /// 
-        /// Si el ID no es válido (menor o igual a cero), se retorna BadRequest.
-        /// Si no se encuentra una estación con el ID especificado, se retorna NotFound.
-        /// 
-        /// La información de la estación incluye:
-        /// - Datos básicos (nombre, ubicación)
-        /// - Estado operativo actual
-        /// - Fecha de último mantenimiento
-        /// - Otros detalles específicos de la estación
-        /// </remarks>
         /// <param name="id">ID de la estación a consultar</param>
         /// <returns>La estación solicitada</returns>
-        /// <response code="200">Retorna la estación solicitada</response>
-        /// <response code="400">Si el ID proporcionado no es válido</response>
-        /// <response code="401">Si el usuario no está autenticado</response>
-        /// <response code="403">Si el usuario no tiene permisos para acceder a este recurso</response>
-        /// <response code="404">Si no se encontró la estación</response>
-        /// <response code="500">Si ocurrió un error interno al procesar la solicitud</response>
-        /// <response code="503">Si hay un problema de conexión con la base de datos</response>
         [HttpGet("{id:int}")]
         [SwaggerOperation(
             Summary = "Obtiene una estación por su ID",
@@ -127,11 +86,8 @@ namespace API.Controllers
                 return BadRequest(new { message = "El ID de estación proporcionado no es válido" });
             }
 
-            // Any exceptions here will be caught by the global exception handling middleware
             var result = await _getEstacionesByIdUseCase.ExecuteAsync(id);
             
-            // If we reach here and result is null, it means the GetByIdAsync didn't throw an EntityNotFoundException
-            // This could happen if the repository doesn't throw exceptions for not found entities
             if (result == null)
             {
                 _logger.LogInformation("Station with ID {Id} not found", id);
