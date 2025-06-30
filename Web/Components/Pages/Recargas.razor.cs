@@ -6,6 +6,7 @@ using Infrastructure.Models;
 using Infrastructure.ViewModels;
 using Microsoft.AspNetCore.Components;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.JSInterop;
 
 namespace Web.Components.Pages
 {
@@ -15,6 +16,7 @@ namespace Web.Components.Pages
         [Inject] private GetDescargaSearchUseCase<ProcDescargaModel> descargaSearchUseCase { get; set; } = default!;
         [Inject] private GetEstacionesByIdUseCase estacionesByIdUseCase { get; set; } = default!;
         [Inject] private IConfiguration Configuration { get; set; } = default!;
+        [Inject] private IJSRuntime JSRuntime { get; set; } = default!;
 
         private IEnumerable<DescargasEntity> DescargasEntities = Enumerable.Empty<DescargasEntity>();
         private EstacionesEntity? EstacionEntity;
@@ -57,11 +59,20 @@ namespace Web.Components.Pages
             await LoadDataAsync();
         }
 
+        protected override async Task OnAfterRenderAsync(bool firstRender)
+        {
+            await JSRuntime.InvokeVoidAsync("tooltipManager");
+        }
+
         public async Task ClickFilterData()
         {
             await LoadDataAsync();
         }
 
+        public async Task ClickDownloadExcel()
+        {
+            
+        }
 
         public async Task ClickUpdateRecargas()
         {
@@ -96,6 +107,7 @@ namespace Web.Components.Pages
             finally
             {
                 isLoadingTable = false;
+                StateHasChanged();
             }
         }
 

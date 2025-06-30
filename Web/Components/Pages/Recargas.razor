@@ -52,7 +52,8 @@
                     </PickerTemplate>
                 </DateRangePicker>
             </div>
-            <div class="col-lg-auto col-sm-12">
+
+            <section class="col-lg-auto col-sm-12 d-grid gap-2 d-md-flex justify-content-md-end">
                 <select class="form-select text-center" @bind="selectedOption" required>
                     <option selected disabled value="0">No. Tanque</option>
                     <option value="0">Todos</option>
@@ -61,15 +62,26 @@
                         <option value="@tank">@tank</option>
                     }
                 </select>
-            </div>
-            <div class="col-lg-auto col-sm-12">
-                <button class="btn btn-primary" @onclick="ClickFilterData">Filtrar</button>
-            </div>
-            <div class="col-lg-auto col-sm-12 d-grid gap-2 d-md-flex justify-content-md-end">
-                <button class="btn btn-outline-secondary" @onclick="ClickUpdateRecargas">
+                
+                <button class="btn btn-primary" 
+                        @onclick="ClickFilterData">
+                    Filtrar
+                </button>
+                <button class="btn btn-outline-secondary"
+                        data-bs-toggle="tooltip" 
+                        data-bs-placement="top" 
+                        data-bs-title="Descargar Excel"
+                        @onclick="ClickDownloadExcel">
+                    <i class="bi bi-file-earmark-arrow-down-fill"></i>
+                </button>
+                <button class="btn btn-outline-secondary" 
+                        data-bs-toggle="tooltip"
+                        data-bs-placement="top"
+                        data-bs-title="Actualizar tabla"
+                        @onclick="ClickUpdateRecargas">
                     <i class="bi bi-arrow-clockwise"></i>
                 </button>
-            </div>
+            </section>
         </div>
     </FilterTemplate>
 </TableComponent>
