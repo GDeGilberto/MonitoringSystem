@@ -36,6 +36,7 @@ namespace Web.Components.Pages
         private int idEstacion;
 
         public bool isLoadingTable = true;
+        private bool isExporting = false;
 
         public IEnumerable<DescargasViewModel> data { get; set; } = Enumerable.Empty<DescargasViewModel>();
 

@@ -71,8 +71,16 @@
                         data-bs-toggle="tooltip" 
                         data-bs-placement="top" 
                         data-bs-title="Descargar Excel"
+                        disabled="@isExporting"
                         @onclick="ClickDownloadExcel">
-                    <i class="bi bi-file-earmark-arrow-down-fill"></i>
+                    @if (isExporting)
+                    {
+                        <i class="spinner-border spinner-border-sm me-1" aria-hidden="true"></i>
+                    }
+                    else
+                    {
+                        <i class="bi bi-file-earmark-arrow-down-fill" aria-hidden="true"></i>
+                    }
                 </button>
                 <button class="btn btn-outline-secondary" 
                         data-bs-toggle="tooltip"
