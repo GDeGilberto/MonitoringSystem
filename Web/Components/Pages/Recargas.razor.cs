@@ -16,13 +16,11 @@ namespace Web.Components.Pages
         [Inject] private GetEstacionesByIdUseCase estacionesByIdUseCase { get; set; } = default!;
         [Inject] private IConfiguration Configuration { get; set; } = default!;
 
-        private IEnumerable<DescargasEntity> DescargasEntities;
-        private EstacionesEntity EstacionEntity;
+        private IEnumerable<DescargasEntity> DescargasEntities = Enumerable.Empty<DescargasEntity>();
+        private EstacionesEntity? EstacionEntity;
 
-        public DateTimeOffset? startDate { get; set; } =
-            new DateTime(DateTime.Today.Year, DateTime.Today.Month, 1);
-        public DateTimeOffset? endDate { get; set; } = 
-            DateTime.Today.AddDays(1).AddTicks(-1);
+        public DateTimeOffset? startDate { get; set; } = new DateTime(DateTime.Today.Year, DateTime.Today.Month, 1);
+        public DateTimeOffset? endDate { get; set; } = DateTime.Today.AddDays(1).AddTicks(-1);
 
         public IEnumerable<int> TankNumbers =>
             EstacionEntity?.Tanques?
@@ -37,54 +35,63 @@ namespace Web.Components.Pages
 
         public bool isLoadingTable = true;
 
-        public IEnumerable<DescargasViewModel> data { get; set; }
+        public IEnumerable<DescargasViewModel> data { get; set; } = Enumerable.Empty<DescargasViewModel>();
 
         public IEnumerable<string> titles =
         [
             "No. Tanque",
             "Vol. Inicial (m3)",
             "Temp. Ini. (°C)",
-            "Fecha Inial.",
+            "Fecha Inicial",
             "Vol. Disponible (m3)",
             "Temp. Final (°C)",
             "Fecha Final",
             "Cant. Cargada (m3)"
         ];
 
-        
         protected override async Task OnInitializedAsync()
         {
             idEstacion = Configuration.GetValue<int>("Estacion:Id");
             EstacionEntity = await estacionesByIdUseCase.ExecuteAsync(idEstacion);
 
-            await GetData();
-            BuildViewModel();
-            isLoadingTable = false;
+            await LoadDataAsync();
         }
 
         public async Task ClickFilterData()
         {
-            isLoadingTable = true;
-
-            await GetData();
-            BuildViewModel();
-
-            isLoadingTable = false;
+            await LoadDataAsync();
         }
+
 
         public async Task ClickUpdateRecargas()
         {
             isLoadingTable = true;
             try
             {
-                await _descargasJobs!.Execute();
-                
-                await GetData();
-                BuildViewModel();
+                if (_descargasJobs != null)
+                {
+                    await _descargasJobs.Execute();
+                }
+                await LoadDataAsync();
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"Error updating recargas: {ex.Message}");
+            }
+            finally
+            {
+                isLoadingTable = false;
+            }
+        }
+
+        private async Task LoadDataAsync()
+        {
+            isLoadingTable = true;
+            
+            try
+            {
+                await GetData();
+                BuildViewModel();
             }
             finally
             {
@@ -106,19 +113,24 @@ namespace Web.Components.Pages
             if (!DescargasEntities.IsNullOrEmpty())
             {
                 data = DescargasEntities
-                .OrderByDescending(data => data.FechaInicial)
-                .Select(data => new DescargasViewModel
+                .OrderByDescending(item => item.FechaInicial)
+                .Select(item => new DescargasViewModel
                 {
-                    NoTanque = data.NoTanque,
-                    VolumenInicial = data.VolumenInicial.ToString("N2"),
-                    TemperaturaInicial = data.TemperaturaInicial?.ToString("N2") ?? "",
-                    FechaInicial = data.FechaInicial.ToString("d/M/yy hh:mm tt"),
-                    VolumenDisponible = data.VolumenDisponible.ToString("N2"),
-                    TemperaturaFinal = data.TemperaturaFinal?.ToString("N2") ?? "",
-                    FechaFinal = data.FechaFinal.ToString("d/M/yy hh:mm tt"),
-                    CantidadCargada = data.CantidadCargada.ToString("N2"),
+                    NoTanque = item.NoTanque,
+                    VolumenInicial = item.VolumenInicial.ToString("N2"),
+                    TemperaturaInicial = item.TemperaturaInicial?.ToString("N2") ?? "",
+                    FechaInicial = item.FechaInicial.ToString("d/M/yy hh:mm tt"),
+                    VolumenDisponible = item.VolumenDisponible.ToString("N2"),
+                    TemperaturaFinal = item.TemperaturaFinal?.ToString("N2") ?? "",
+                    FechaFinal = item.FechaFinal.ToString("d/M/yy hh:mm tt"),
+                    CantidadCargada = item.CantidadCargada.ToString("N2"),
                 });
             }
+            else
+            {
+                data = Enumerable.Empty<DescargasViewModel>();
+            }
+            
             StateHasChanged();
         }
 

@@ -35,7 +35,7 @@ Esta API permite gestionar estaciones, inventarios y registros de descargas en e
 
 ## Inicio rápido
 Para comenzar a usar esta API:
-1. Autentícate usando el endpoint `/api/auth/login`
+1. Auténticate usando el endpoint `/api/auth/login`
 2. Usa el token JWT recibido en el encabezado `Authorization`
 3. Explora los recursos disponibles según tus permisos
 
@@ -173,7 +173,7 @@ Para comenzar a usar esta API:
                 c.DocumentTitle = "Sistema de Monitoreo - API Documentation";
                 c.DocExpansion(DocExpansion.List);
                 c.DefaultModelExpandDepth(2);
-                c.DefaultModelsExpandDepth(1);
+                c.DefaultModelsExpandDepth(-1);
                 c.EnableDeepLinking();
                 c.DisplayRequestDuration();
                 
@@ -187,18 +187,15 @@ Para comenzar a usar esta API:
             return app;
         }
 
-        /// <summary>
-        /// Define el orden de los controladores
-        /// </summary>
         private static string GetTagOrderPrefix(string controllerName)
         {
             return controllerName switch
             {
-                "Auth" => "01_",           // Primero Autenticación
-                "Estaciones" => "02_",     // Segundo Estaciones
-                "Inventarios" => "03_",    // Tercero Inventarios
-                "Descargas" => "04_",      // Cuarto Descargas
-                _ => "99_"                 // El resto al final por orden alfabético
+                "Auth" => "01_",
+                "Estaciones" => "02_",
+                "Inventarios" => "03_",
+                "Descargas" => "04_",
+                _ => "99_"
             };
         }
     }
@@ -231,10 +228,8 @@ Para comenzar a usar esta API:
             // Mejorar la descripción de los parámetros
             foreach (var parameter in operation.Parameters)
             {
-                var description = parameter.Description;
-                if (string.IsNullOrEmpty(description))
+                if (string.IsNullOrEmpty(parameter.Description))
                 {
-                    // Intentar generar una descripción basada en el nombre del parámetro
                     parameter.Description = $"Parámetro {parameter.Name}";
                 }
             }

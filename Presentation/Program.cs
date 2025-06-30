@@ -10,49 +10,55 @@ using Infrastructure.ViewModels;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Presentation;
 
-// Configuración
-var configuration = new ConfigurationBuilder()
-    .SetBasePath(Directory.GetCurrentDirectory())
-    .AddJsonFile("appsettings.json")
-    .Build();
-
-// DI
-var services = new ServiceCollection();
-
-// Configuración de la base de datos
-services.AddDbContext<AppDbContext>(options =>
-    options.UseSqlServer(configuration.GetConnectionString("DefaultConnection")));
-services.AddSingleton<IConfiguration>(configuration);
-
-// Configuración del servicio serial
-services.AddSingleton<ISerialPortService>(provider =>
-    new SerialPortService());
-services.AddSingleton<ISerialPortService, SerialPortService>();
-
-services.AddScoped<IRepository<DescargasEntity>, DescargasRepository>();
-services.AddScoped<IRepository<InventarioEntity>, InventarioRepository>();
-services.AddScoped<IPresenter<InventarioEntity, InventarioViewModel>, InventarioPresenter>();
-services.AddScoped<DescargasService<DescargasEntity>>();
-services.AddScoped<InventarioService<InventarioEntity, InventarioViewModel>>();
-
-services.AddScoped<ParceDeliveryReport>();
-services.AddScoped<ParseTankInventoryReport>();
-
-services.AddScoped<TerminalConsole>();
-services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
-
-var provider = services.BuildServiceProvider();
-
-// Ejecución
 try
 {
+    var configuration = new ConfigurationBuilder()
+        .SetBasePath(Directory.GetCurrentDirectory())
+        .AddJsonFile("appsettings.json")
+        .Build();
+
+    var services = new ServiceCollection();
+
+    // Configuración de logging
+    services.AddLogging(builder =>
+    {
+        builder.SetMinimumLevel(LogLevel.Information);
+    });
+
+    // Configuración de la base de datos
+    services.AddDbContext<AppDbContext>(options =>
+        options.UseSqlServer(configuration.GetConnectionString("DefaultConnection")));
+    
+    services.AddSingleton<IConfiguration>(configuration);
+
+    // Servicios
+    services.AddSingleton<ISerialPortService, SerialPortService>();
+    services.AddScoped<IRepository<DescargasEntity>, DescargasRepository>();
+    services.AddScoped<IRepository<InventarioEntity>, InventarioRepository>();
+    services.AddScoped<IPresenter<InventarioEntity, InventarioViewModel>, InventarioPresenter>();
+    services.AddScoped<DescargasService<DescargasEntity>>();
+    services.AddScoped<InventarioService<InventarioEntity, InventarioViewModel>>();
+    services.AddScoped<ParceDeliveryReport>();
+    services.AddScoped<ParseTankInventoryReport>();
+    services.AddScoped<TerminalConsole>();
+    services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
+
+    var provider = services.BuildServiceProvider();
+    var logger = provider.GetRequiredService<ILogger<Program>>();
+
+    logger.LogInformation("Iniciando aplicación de terminal");
+    
     var terminal = provider.GetRequiredService<TerminalConsole>();
     terminal.Run();
 }
 catch (Exception ex)
 {
+    Console.ForegroundColor = ConsoleColor.Red;
     Console.WriteLine($"Error crítico: {ex.Message}");
-    Thread.Sleep(5000);
+    Console.ResetColor();
+    Console.WriteLine("Presione cualquier tecla para salir...");
+    Console.ReadKey();
 }

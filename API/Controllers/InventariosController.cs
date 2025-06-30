@@ -11,10 +11,6 @@ namespace API.Controllers
     /// <summary>
     /// Controlador para la gestión de inventarios de tanques
     /// </summary>
-    /// <remarks>
-    /// Este controlador permite realizar operaciones CRUD sobre los registros de inventario de tanques.
-    /// Los inventarios representan el estado actual de los tanques de combustible en las estaciones.
-    /// </remarks>
     [ApiController]
     [Route("api/[controller]")]
     [Authorize]
@@ -41,28 +37,8 @@ namespace API.Controllers
         /// <summary>
         /// Obtiene el inventario más reciente por ID de estación
         /// </summary>
-        /// <remarks>
-        /// Este endpoint retorna los registros de inventario más recientes para una estación específica.
-        /// 
-        /// La información incluye:
-        /// - Nivel actual de cada tanque
-        /// - Volumen disponible
-        /// - Temperatura del producto
-        /// - Fecha y hora de la última medición
-        /// - Información sobre el producto almacenado
-        /// 
-        /// Si el ID de estación no es válido (menor o igual a cero), se retorna BadRequest.
-        /// Si no existen registros de inventario para la estación, se retorna NoContent.
-        /// </remarks>
         /// <param name="idEstacion">ID de la estación</param>
         /// <returns>Los registros de inventario más recientes para la estación especificada</returns>
-        /// <response code="200">Retorna los registros de inventario</response>
-        /// <response code="204">Si no existen registros de inventario para la estación</response>
-        /// <response code="400">Si el ID de estación proporcionado no es válido</response>
-        /// <response code="401">Si el usuario no está autenticado</response>
-        /// <response code="403">Si el usuario no tiene permisos para acceder a este recurso</response>
-        /// <response code="500">Si ocurrió un error interno al procesar la solicitud</response>
-        /// <response code="503">Si hay un problema de conexión con la base de datos</response>
         [HttpGet("{idEstacion:int}")]
         [SwaggerOperation(
             Summary = "Obtiene el inventario más reciente por estación",
@@ -85,7 +61,6 @@ namespace API.Controllers
                 return BadRequest(new { message = "El ID de estación proporcionado no es válido" });
             }
 
-            // Let the global exception middleware handle any exceptions
             var result = await _getLatestInventarioByStationUseCase.ExecuteAsync(s => s.Idestacion == idEstacion);
             
             if (result == null || !result.Any())
@@ -100,28 +75,8 @@ namespace API.Controllers
         /// <summary>
         /// Obtiene un registro de inventario por su ID
         /// </summary>
-        /// <remarks>
-        /// Este endpoint retorna información detallada de un registro de inventario específico según su ID.
-        /// 
-        /// La información incluye:
-        /// - Estación y tanque asociados
-        /// - Volumen disponible
-        /// - Temperatura del producto
-        /// - Fecha y hora de la medición
-        /// - Información sobre el producto almacenado
-        /// 
-        /// Si el ID no es válido (menor o igual a cero), se retorna BadRequest.
-        /// Si no se encuentra un registro de inventario con el ID especificado, se retorna NotFound.
-        /// </remarks>
         /// <param name="id">ID del registro de inventario a consultar</param>
         /// <returns>El registro de inventario solicitado</returns>
-        /// <response code="200">Retorna el registro de inventario solicitado</response>
-        /// <response code="400">Si el ID proporcionado no es válido</response>
-        /// <response code="401">Si el usuario no está autenticado</response>
-        /// <response code="403">Si el usuario no tiene permisos para acceder a este recurso</response>
-        /// <response code="404">Si no se encontró el registro de inventario</response>
-        /// <response code="500">Si ocurrió un error interno al procesar la solicitud</response>
-        /// <response code="503">Si hay un problema de conexión con la base de datos</response>
         [HttpGet("id/{id:int}")]
         [SwaggerOperation(
             Summary = "Obtiene un inventario por su ID",
@@ -144,12 +99,8 @@ namespace API.Controllers
                 return BadRequest(new { message = "El ID proporcionado no es válido" });
             }
 
-            // Si la entidad no se encuentra, el método GetByIdAsync debería lanzar EntityNotFoundException,
-            // que será manejada por el middleware global de excepciones
             var result = await _getInventarioByIdUseCase.ExecuteAsync(id);
             
-            // Si llegamos aquí y el resultado es nulo, significa que GetByIdAsync no lanzó una excepción
-            // como se esperaba para un registro no encontrado.
             if (result == null)
             {
                 _logger.LogInformation("Inventory with ID {Id} not found", id);
@@ -162,41 +113,8 @@ namespace API.Controllers
         /// <summary>
         /// Crea un nuevo registro de inventario
         /// </summary>
-        /// <remarks>
-        /// Este endpoint permite registrar un nuevo inventario en el sistema.
-        /// 
-        /// **Campos requeridos:**
-        /// - IdEstacion: ID de la estación (valor positivo)
-        /// - NoTanque: Número del tanque (valor positivo)
-        /// - VolumenDisponible: Volumen disponible (en litros, valor positivo)
-        /// 
-        /// **Campos opcionales:**
-        /// - Temperatura: Temperatura del producto (en grados Celsius)
-        /// - Fecha: Fecha y hora de la medición (por defecto, la fecha actual)
-        /// - Observaciones: Notas adicionales sobre la medición
-        /// 
-        /// Ejemplo de solicitud:
-        /// 
-        /// ```json
-        /// {
-        ///   "idEstacion": 1,
-        ///   "noTanque": 2,
-        ///   "volumenDisponible": 3500.75,
-        ///   "temperatura": 25.5,
-        ///   "fecha": "2023-06-15T10:30:00Z",
-        ///   "observaciones": "Medición rutinaria programada"
-        /// }
-        /// ```
-        /// </remarks>
         /// <param name="inventarioRequest">Datos del inventario a crear</param>
         /// <returns>Respuesta indicando el éxito o fracaso de la operación</returns>
-        /// <response code="201">Si el inventario se creó exitosamente</response>
-        /// <response code="400">Si los datos de la solicitud son inválidos</response>
-        /// <response code="401">Si el usuario no está autenticado</response>
-        /// <response code="403">Si el usuario no tiene permisos para realizar esta acción</response>
-        /// <response code="409">Si hay un conflicto con un registro existente</response>
-        /// <response code="500">Si ocurrió un error interno al procesar la solicitud</response>
-        /// <response code="503">Si hay un problema de conexión con la base de datos</response>
         [HttpPost]
         [SwaggerOperation(
             Summary = "Crea un nuevo registro de inventario",
@@ -218,25 +136,12 @@ namespace API.Controllers
                 return BadRequest(new { message = "El cuerpo de la solicitud no puede estar vacío" });
             }
 
-            // Validate required fields
-            var validationErrors = new List<string>();
-            
-            if (inventarioRequest.IdEstacion <= 0)
-                validationErrors.Add("El ID de estación es obligatorio y debe ser positivo");
-                
-            if (inventarioRequest.NoTanque <= 0)
-                validationErrors.Add("El número de tanque es obligatorio y debe ser positivo");
-                
-            // Validation for other required fields based on your actual DTO structure
-            if (inventarioRequest.VolumenDisponible <= 0)
-                validationErrors.Add("El volumen disponible debe ser un valor positivo");
-                
+            var validationErrors = ValidateInventarioRequest(inventarioRequest);
             if (validationErrors.Any())
             {
                 return BadRequest(new { message = "Datos de inventario inválidos", errors = validationErrors });
             }
 
-            // Cualquier excepción será manejada por el middleware global
             await _createInventarioUseCase.ExecuteAsync(inventarioRequest);
             
             _logger.LogInformation(
@@ -248,6 +153,22 @@ namespace API.Controllers
                 idEstacion = inventarioRequest.IdEstacion,
                 noTanque = inventarioRequest.NoTanque
             });
+        }
+
+        private static List<string> ValidateInventarioRequest(InventarioRequestDTO request)
+        {
+            var errors = new List<string>();
+            
+            if (request.IdEstacion <= 0)
+                errors.Add("El ID de estación es obligatorio y debe ser positivo");
+                
+            if (request.NoTanque <= 0)
+                errors.Add("El número de tanque es obligatorio y debe ser positivo");
+                
+            if (request.VolumenDisponible <= 0)
+                errors.Add("El volumen disponible debe ser un valor positivo");
+                
+            return errors;
         }
     }
 }

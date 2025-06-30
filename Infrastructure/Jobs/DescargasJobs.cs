@@ -171,11 +171,11 @@ namespace Infrastructure.Jobs
                                 idEstacion,
                                 tank.NoTank,
                                 volumenInicial,
-                                tank.Deliveries.FirstOrDefault()?.Start.Temperature ?? 0,
-                                tank.Deliveries.FirstOrDefault()?.Start.Date ?? DateTime.MinValue,
+                                firstDelivery.Start.Temperature,
+                                firstDelivery.Start.Date,
                                 volumenDisponible,
-                                tank.Deliveries.FirstOrDefault()?.End.Temperature ?? 0,
-                                tank.Deliveries.FirstOrDefault()?.End.Date ?? DateTime.MinValue,
+                                firstDelivery.End.Temperature,
+                                firstDelivery.End.Date,
                                 volumenDisponible - volumenInicial
                             );
 
