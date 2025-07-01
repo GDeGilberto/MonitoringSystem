@@ -3,10 +3,12 @@ using BlazorDateRangePicker;
 using Domain.Entities;
 using Infrastructure.Jobs;
 using Infrastructure.Models;
+using Infrastructure.Services;
 using Infrastructure.ViewModels;
 using Microsoft.AspNetCore.Components;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.JSInterop;
+using System.Data;
 
 namespace Web.Components.Pages
 {
@@ -17,6 +19,7 @@ namespace Web.Components.Pages
         [Inject] private GetEstacionesByIdUseCase estacionesByIdUseCase { get; set; } = default!;
         [Inject] private IConfiguration Configuration { get; set; } = default!;
         [Inject] private IJSRuntime JSRuntime { get; set; } = default!;
+        [Inject] private IExcelExportService excelExportService { get; set; } = default!;
 
         private IEnumerable<DescargasEntity> DescargasEntities = Enumerable.Empty<DescargasEntity>();
         private EstacionesEntity? EstacionEntity;
@@ -72,7 +75,47 @@ namespace Web.Components.Pages
 
         public async Task ClickDownloadExcel()
         {
-            
+            if (isExporting) return;
+
+            isExporting = true;
+            StateHasChanged();
+
+            // Add a small delay to ensure the UI updates with the spinner
+            await Task.Delay(100);
+
+            try
+            {
+                if (!data.Any())
+                {
+                    await JSRuntime.InvokeVoidAsync("alert", "No hay datos para exportar.");
+                    return;
+                }
+
+                // Generate filename with current date and filters
+                var fileName = GenerateFileName();
+                
+                // Generate title for the Excel file
+                var title = GenerateExcelTitle();
+
+                // Export data to Excel (this operation might take some time)
+                var excelBytes = excelExportService.ExportToExcel(data, "Recargas", title);
+
+                // Add another small delay before download to show spinner longer for better UX
+                await Task.Delay(500);
+
+                // Download the Excel file using the specific Excel download function
+                await JSRuntime.InvokeVoidAsync("downloadExcelFile", fileName, Convert.ToBase64String(excelBytes));
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error exporting to Excel: {ex.Message}");
+                await JSRuntime.InvokeVoidAsync("alert", "Error al exportar los datos. Por favor, intente nuevamente.");
+            }
+            finally
+            {
+                isExporting = false;
+                StateHasChanged();
+            }
         }
 
         public async Task ClickUpdateRecargas()
@@ -145,6 +188,60 @@ namespace Web.Components.Pages
             }
             
             StateHasChanged();
+        }
+
+        private string GenerateFileName()
+        {
+            var baseFileName = "Recargas";
+            var timestamp = DateTime.Now.ToString("dd/MM/yy");
+            
+            var filterInfo = string.Empty;
+            
+            if (selectedOption > 0)
+            {
+                filterInfo += $"_Tanque{selectedOption}";
+            }
+            
+            if (startDate.HasValue || endDate.HasValue)
+            {
+                var startStr = startDate?.ToString("dd/MM/yy") ?? "inicio";
+                var endStr = endDate?.ToString("dd/MM/yy") ?? "fin";
+                filterInfo += $"_Del_{startStr}_Al_{endStr}";
+            }
+            
+            return $"{baseFileName}{filterInfo}_{timestamp}.xlsx";
+        }
+
+        private string GenerateExcelTitle()
+        {
+            var title = $"Reporte de Compras - {EstacionEntity?.Nombre ?? "Estación"}";
+            
+            if (selectedOption > 0)
+            {
+                title += $" - Tanque {selectedOption}";
+            }
+            
+            if (startDate.HasValue || endDate.HasValue)
+            {
+                var dateRange = string.Empty;
+                if (startDate.HasValue && endDate.HasValue)
+                {
+                    dateRange = $"Del {startDate.Value:dd/MM/yy} al {endDate.Value:dd/MM/yy}";
+                }
+                else if (startDate.HasValue)
+                {
+                    dateRange = $"Desde {startDate.Value:dd/MM/yy}";
+                }
+                else if (endDate.HasValue)
+                {
+                    dateRange = $"Hasta {endDate.Value:dd/MM/yy}";
+                }
+                title += $" - {dateRange}";
+            }
+            
+            title += $" - Generado el {DateTime.Now:dd/MM/yy HH:mm}";
+            
+            return title;
         }
 
         public void SetToday(DateRangePicker context)
