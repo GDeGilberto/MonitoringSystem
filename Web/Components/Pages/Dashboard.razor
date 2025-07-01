@@ -7,7 +7,8 @@
 @using Web.Components.Tanques
 @using Web.Components.BarChart
 
-@attribute [Authorize(Roles = Roles.Admin)]
+@attribute [Authorize]
+@* @attribute [Authorize(Roles = Roles.Admin)] *@
 <PageTitle>Dashboard</PageTitle>
 
 <nav style="--bs-breadcrumb-divider: '>';" aria-label="breadcrumb">
@@ -50,6 +51,3 @@
         </div>
     </div>
 </div>
-
-
-
