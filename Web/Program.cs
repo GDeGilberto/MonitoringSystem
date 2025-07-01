@@ -9,6 +9,7 @@ using Infrastructure.Jobs;
 using Infrastructure.Models;
 using Infrastructure.Presenters;
 using Infrastructure.Repositories;
+using Infrastructure.Services;
 using Infrastructure.ViewModels;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -111,6 +112,9 @@ builder.Services.AddSingleton<ISerialPortService, SerialPortManager>();
 // Application Services
 builder.Services.AddScoped<DescargasService<DescargasEntity>>();
 builder.Services.AddScoped<InventarioService<InventarioEntity, InventarioViewModel>>();
+
+// Excel Export Service
+builder.Services.AddScoped<IExcelExportService, ExcelExportService>();
 
 // Presenters
 builder.Services.AddScoped<IPresenter<InventarioEntity, InventarioViewModel>, InventarioPresenter>();
