@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.JSInterop;
 using System.Data;
+using Web.Utilities;
 
 namespace Web.Components.Pages
 {
@@ -25,7 +26,7 @@ namespace Web.Components.Pages
         private EstacionesEntity? EstacionEntity;
 
         public DateTimeOffset? startDate { get; set; } = new DateTime(DateTime.Today.Year, DateTime.Today.Month, 1);
-        public DateTimeOffset? endDate { get; set; } = DateTime.Today.AddDays(1).AddTicks(-1);
+        public DateTimeOffset? endDate { get; set; } = new DateTime(DateTime.Today.Year, DateTime.Today.Month, DateTime.DaysInMonth(DateTime.Today.Year, DateTime.Today.Month));
 
         public IEnumerable<int> TankNumbers =>
             EstacionEntity?.Tanques?
@@ -43,17 +44,7 @@ namespace Web.Components.Pages
 
         public IEnumerable<DescargasViewModel> data { get; set; } = Enumerable.Empty<DescargasViewModel>();
 
-        public IEnumerable<string> titles =
-        [
-            "No. Tanque",
-            "Vol. Inicial (m3)",
-            "Temp. Ini. (°C)",
-            "Fecha Inicial",
-            "Vol. Disponible (m3)",
-            "Temp. Final (°C)",
-            "Fecha Final",
-            "Cant. Cargada (m3)"
-        ];
+        public IEnumerable<string> titles => ViewModelHelper.GetTitlesFromViewModel<DescargasViewModel>();
 
         protected override async Task OnInitializedAsync()
         {

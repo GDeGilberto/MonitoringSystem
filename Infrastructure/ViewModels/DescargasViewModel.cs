@@ -7,7 +7,7 @@ namespace Infrastructure.ViewModels
         [DisplayName("No. Tanque")]
         public int NoTanque { get; set; }
         
-        [DisplayName("Vol. Inicial (m3)")]
+        [DisplayName("Vol. Inicial (m³)")]
         public string VolumenInicial { get; set; }
         
         [DisplayName("Temp. Ini. (°C)")]
@@ -16,7 +16,7 @@ namespace Infrastructure.ViewModels
         [DisplayName("Fecha Inicial")]
         public string FechaInicial { get; set; }
         
-        [DisplayName("Vol. Disponible (m3)")]
+        [DisplayName("Vol. Disponible (m³)")]
         public string VolumenDisponible { get; set; }
         
         [DisplayName("Temp. Final (°C)")]
@@ -25,7 +25,7 @@ namespace Infrastructure.ViewModels
         [DisplayName("Fecha Final")]
         public string FechaFinal { get; set; }
         
-        [DisplayName("Cant. Cargada (m3)")]
+        [DisplayName("Cant. Cargada (m³)")]
         public string CantidadCargada { get; set; }
     }
 }
