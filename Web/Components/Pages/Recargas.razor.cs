@@ -82,10 +82,7 @@ namespace Web.Components.Pages
                     return;
                 }
 
-                // Generate filename with current date and filters
                 var fileName = GenerateFileName();
-                
-                // Generate title for the Excel file
                 var title = GenerateExcelTitle();
 
                 // Export data to Excel (this operation might take some time)

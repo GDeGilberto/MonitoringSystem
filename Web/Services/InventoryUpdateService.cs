@@ -1,5 +1,3 @@
-using Microsoft.AspNetCore.Components;
-
 namespace Web.Services
 {
     public interface IInventoryUpdateService
