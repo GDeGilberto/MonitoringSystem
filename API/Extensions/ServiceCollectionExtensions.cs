@@ -37,6 +37,8 @@ namespace API.Extensions
             services.AddScoped<IRepository<DescargasEntity>, DescargasRepository>();
             services.AddScoped<IRepository<EstacionesEntity>, EstacionesRepository>();
             services.AddScoped<IRepository<InventarioEntity>, InventarioRepository>();
+            services.AddScoped<IRepository<TanqueEntity>, TanqueRepository>();
+            services.AddScoped<ITanqueRepository, TanqueRepository>();
             services.AddScoped<IRepositorySearch<ProcDescargaModel, DescargasEntity>, DescargasRepository>();
             services.AddScoped<IRepositorySearch<ProcInventarioModel, InventarioEntity>, InventarioRepository>();
             
@@ -57,6 +59,13 @@ namespace API.Extensions
             services.AddScoped<DescargasService<DescargasEntity>>();
             services.AddScoped<InventarioService<InventarioEntity, InventarioViewModel>>();
             
+            // Add HttpClient for SOAP service
+            services.AddHttpClient<IDagalSoapService, DagalSoapService>(client =>
+            {
+                client.Timeout = TimeSpan.FromSeconds(30);
+                client.DefaultRequestHeaders.Add("User-Agent", "MonitoringSystem/1.0");
+            });
+            
             return services;
         }
         
@@ -72,6 +81,7 @@ namespace API.Extensions
             services.AddScoped<GetInventariosUseCase>();
             services.AddScoped<GetInventarioByIdUseCase>();
             services.AddScoped<GetLatestInventarioByStationUseCase<ProcInventarioModel>>();
+            services.AddScoped<GetTanqueByEstacionAndNumeroUseCase>();
             
             return services;
         }
