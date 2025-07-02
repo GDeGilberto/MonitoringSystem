@@ -5,6 +5,7 @@ using Infrastructure.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using Swashbuckle.AspNetCore.Annotations;
+using Application.Interfaces;
 
 namespace API.Controllers
 {
@@ -20,17 +21,20 @@ namespace API.Controllers
         private readonly GetLatestInventarioByStationUseCase<ProcInventarioModel> _getLatestInventarioByStationUseCase;
         private readonly GetInventarioByIdUseCase _getInventarioByIdUseCase;
         private readonly CreateInventarioUseCase<InventarioRequestDTO> _createInventarioUseCase;
+        private readonly IDagalSoapService _dagalSoapService;
         private readonly ILogger<InventariosController> _logger;
 
         public InventariosController(
             GetLatestInventarioByStationUseCase<ProcInventarioModel> getLatestInventarioByStationUseCase,
             GetInventarioByIdUseCase getInventarioByIdUseCase,
             CreateInventarioUseCase<InventarioRequestDTO> createInventarioUseCase,
+            IDagalSoapService dagalSoapService,
             ILogger<InventariosController> logger)
         {
             _getLatestInventarioByStationUseCase = getLatestInventarioByStationUseCase;
             _getInventarioByIdUseCase = getInventarioByIdUseCase;
             _createInventarioUseCase = createInventarioUseCase;
+            _dagalSoapService = dagalSoapService;
             _logger = logger;
         }
 
@@ -153,6 +157,90 @@ namespace API.Controllers
                 idEstacion = inventarioRequest.IdEstacion,
                 noTanque = inventarioRequest.NoTanque
             });
+        }
+
+        /// <summary>
+        /// Prueba el envío de un inventario al servicio SOAP de Dagal
+        /// </summary>
+        /// <param name="inventarioRequest">Datos del inventario a enviar</param>
+        /// <returns>Resultado del envío al servicio SOAP</returns>
+        [HttpPost("test-soap")]
+        [SwaggerOperation(
+            Summary = "Prueba el envío al servicio SOAP de Dagal",
+            Description = "Envía un registro de inventario al servicio SOAP de Dagal para probar la integración",
+            OperationId = "TestSoapInventario",
+            Tags = new[] { "Inventarios" }
+        )]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [ProducesResponseType(StatusCodes.Status503ServiceUnavailable)]
+        public async Task<ActionResult> TestSoapSend([FromBody] InventarioRequestDTO inventarioRequest)
+        {
+            if (inventarioRequest == null)
+            {
+                return BadRequest(new { message = "El cuerpo de la solicitud no puede estar vacío" });
+            }
+
+            var validationErrors = ValidateInventarioRequest(inventarioRequest);
+            if (validationErrors.Any())
+            {
+                return BadRequest(new { message = "Datos de inventario inválidos", errors = validationErrors });
+            }
+
+            try
+            {
+                // Crear entidad de inventario para prueba
+                var inventarioEntity = new InventarioEntity(
+                    inventarioRequest.IdEstacion,
+                    inventarioRequest.NoTanque,
+                    inventarioRequest.ClaveProducto ?? "34006", // Valor por defecto para pruebas
+                    inventarioRequest.VolumenDisponible,
+                    inventarioRequest.Temperatura,
+                    DateTime.Now
+                );
+
+                // Enviar al servicio SOAP
+                var result = await _dagalSoapService.RegistrarEstatusInventarioAsync(inventarioEntity);
+
+                if (result)
+                {
+                    _logger.LogInformation(
+                        "SOAP test successful for Estacion {IdEstacion} and Tanque {NoTanque}",
+                        inventarioRequest.IdEstacion, inventarioRequest.NoTanque);
+                    
+                    return Ok(new { 
+                        message = "Inventario enviado exitosamente al servicio SOAP de Dagal", 
+                        success = true,
+                        idEstacion = inventarioRequest.IdEstacion,
+                        noTanque = inventarioRequest.NoTanque
+                    });
+                }
+                else
+                {
+                    _logger.LogWarning(
+                        "SOAP test failed for Estacion {IdEstacion} and Tanque {NoTanque}",
+                        inventarioRequest.IdEstacion, inventarioRequest.NoTanque);
+                    
+                    return BadRequest(new { 
+                        message = "Error al enviar inventario al servicio SOAP de Dagal", 
+                        success = false
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Exception during SOAP test for Estacion {IdEstacion} and Tanque {NoTanque}",
+                    inventarioRequest.IdEstacion, inventarioRequest.NoTanque);
+                
+                return StatusCode(500, new { 
+                    message = "Error interno al procesar la solicitud SOAP", 
+                    error = ex.Message,
+                    success = false
+                });
+            }
         }
 
         private static List<string> ValidateInventarioRequest(InventarioRequestDTO request)

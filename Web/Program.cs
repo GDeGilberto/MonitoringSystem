@@ -99,12 +99,15 @@ builder.Services.AddScoped<IRepositorySearch<ProcDescargaModel, DescargasEntity>
 builder.Services.AddScoped<IRepository<EstacionesEntity>, EstacionesRepository>();
 builder.Services.AddScoped<IRepository<InventarioEntity>, InventarioRepository>();
 builder.Services.AddScoped<IRepository<DescargasEntity>, DescargasRepository>();
+builder.Services.AddScoped<IRepository<TanqueEntity>, TanqueRepository>();
+builder.Services.AddScoped<ITanqueRepository, TanqueRepository>();
 builder.Services.AddScoped<IRepositorySearch<ProcInventarioModel, InventarioEntity>, InventarioRepository>();
 
 // Use Case registrations
 builder.Services.AddScoped<GetDescargaSearchUseCase<ProcDescargaModel>>();
 builder.Services.AddScoped<GetLatestInventarioByStationUseCase<ProcInventarioModel>>();
 builder.Services.AddScoped<GetEstacionesByIdUseCase>();
+builder.Services.AddScoped<GetTanqueByEstacionAndNumeroUseCase>();
 
 // Serial Port Services
 builder.Services.AddSingleton<ISerialPortService, SerialPortManager>();
@@ -112,6 +115,13 @@ builder.Services.AddSingleton<ISerialPortService, SerialPortManager>();
 // Application Services
 builder.Services.AddScoped<DescargasService<DescargasEntity>>();
 builder.Services.AddScoped<InventarioService<InventarioEntity, InventarioViewModel>>();
+
+// SOAP Service for Dagal
+builder.Services.AddHttpClient<IDagalSoapService, DagalSoapService>(client =>
+{
+    client.Timeout = TimeSpan.FromSeconds(30);
+    client.DefaultRequestHeaders.Add("User-Agent", "MonitoringSystem/1.0");
+});
 
 // Excel Export Service
 builder.Services.AddScoped<IExcelExportService, ExcelExportService>();
