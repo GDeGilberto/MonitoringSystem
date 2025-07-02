@@ -63,38 +63,8 @@ namespace Infrastructure.Services
                     var cell = worksheet.Cell(currentRow, columnIndex);
                     
                     // Format cell based on data type
-                    if (value != null)
-                    {
-                        if (IsNumericType(property.PropertyType))
-                        {
-                            if (double.TryParse(value.ToString(), out double numericValue))
-                            {
-                                cell.Value = numericValue;
-                                cell.Style.NumberFormat.Format = "#,##0.00";
-                            }
-                            else
-                            {
-                                cell.Value = value.ToString();
-                            }
-                        }
-                        else if (property.PropertyType == typeof(DateTime) || property.PropertyType == typeof(DateTime?))
-                        {
-                            if (DateTime.TryParse(value.ToString(), out DateTime dateValue))
-                            {
-                                cell.Value = dateValue;
-                                cell.Style.DateFormat.Format = "dd/MM/yyyy hh:mm AM/PM";
-                            }
-                            else
-                            {
-                                cell.Value = value.ToString();
-                            }
-                        }
-                        else
-                        {
-                            cell.Value = value.ToString();
-                        }
-                    }
-                    
+                    cell.Value = value.ToString();
+                    cell.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Right;
                     cell.Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
                     columnIndex++;
                 }
