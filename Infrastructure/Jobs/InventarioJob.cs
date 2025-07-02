@@ -18,19 +18,22 @@ namespace Infrastructure.Jobs
         private readonly ParseTankInventoryReport _parseTankInventoryReport;
         private readonly IServiceScopeFactory _scopeFactory;
         private readonly ILogger<InventarioJob> _logger;
+        private readonly IDagalSoapService _dagalSoapService;
 
         public InventarioJob(
             IConfiguration config,
             ISerialPortService serialPortService,
             ParseTankInventoryReport parseTankInventoryReport,
             IServiceScopeFactory scopeFactory,
-            ILogger<InventarioJob> logger)
+            ILogger<InventarioJob> logger,
+            IDagalSoapService dagalSoapService)
         {
             _config = config;
             _serialPortService = serialPortService;
             _parseTankInventoryReport = parseTankInventoryReport;
             _scopeFactory = scopeFactory;
             _logger = logger;
+            _dagalSoapService = dagalSoapService;
         }
 
         public async Task Execute()
@@ -150,6 +153,8 @@ namespace Infrastructure.Jobs
                     int tankCount = 0;
                     int successCount = 0;
                     int errorCount = 0;
+                    int soapSuccessCount = 0;
+                    int soapErrorCount = 0;
 
                     foreach (var tank in result.Tanks)
                     {
@@ -161,28 +166,68 @@ namespace Infrastructure.Jobs
 
                         try
                         {
+                            // Obtener información del tanque para conseguir la clave del producto
+                            var getTanqueUseCase = scope.ServiceProvider.GetRequiredService<GetTanqueByEstacionAndNumeroUseCase>();
+                            var tanqueInfo = await getTanqueUseCase.ExecuteAsync(idEstacion, tank.NoTank);
+                            
+                            var claveProducto = tanqueInfo?.Producto ?? "";
+                            
+                            if (string.IsNullOrEmpty(claveProducto))
+                            {
+                                _logger.LogWarning("No se encontró clave de producto para tanque {NoTanque} en estación {IdEstacion}", 
+                                    tank.NoTank, idEstacion);
+                            }
+
                             InventarioEntity inventario = new(
                                 idEstacion,
                                 tank.NoTank,
-                                "",
+                                claveProducto,
                                 tank.TankData.Volume,
                                 tank.TankData.Temperature,
                                 DateTime.Now
                             );
 
+                            // Guardar en base de datos local
                             await inventarioService.AddAsync(inventario);
                             successCount++;
-                            Console.WriteLine($"   ✓ Inventario guardado exitosamente para tanque {tank.NoTank}");
+                            Console.WriteLine($"   ✓ Inventario guardado exitosamente en BD local para tanque {tank.NoTank}");
+
+                            // Enviar a servicio SOAP de Dagal
+                            try
+                            {
+                                var soapResult = await _dagalSoapService.RegistrarEstatusInventarioAsync(inventario);
+                                if (soapResult)
+                                {
+                                    soapSuccessCount++;
+                                    Console.WriteLine($"   ✓ Inventario enviado exitosamente a Dagal SOAP para tanque {tank.NoTank}");
+                                }
+                                else
+                                {
+                                    soapErrorCount++;
+                                    Console.WriteLine($"   ✗ Error al enviar inventario a Dagal SOAP para tanque {tank.NoTank}");
+                                }
+                            }
+                            catch (Exception soapEx)
+                            {
+                                soapErrorCount++;
+                                _logger.LogError(soapEx, "Error al enviar inventario a Dagal SOAP para tanque {NoTanque}", tank.NoTank);
+                                Console.WriteLine($"   ✗ Excepción al enviar inventario a Dagal SOAP para tanque {tank.NoTank}");
+                            }
                         }
                         catch (Exception ex)
                         {
                             errorCount++;
                             _logger.LogError(ex, "Error al guardar inventario para tanque {NoTanque}", tank.NoTank);
-                            }
                         }
+                    }
 
-                    _logger.LogInformation("Resumen: {TotalTanques} tanques procesados, {Exitosos} exitosos, {Errores} errores", 
-                        result.Tanks.Count, successCount, errorCount);
+                    _logger.LogInformation("Resumen: {TotalTanques} tanques procesados, BD Local: {Exitosos} exitosos / {Errores} errores, Dagal SOAP: {SoapExitosos} exitosos / {SoapErrores} errores", 
+                        result.Tanks.Count, successCount, errorCount, soapSuccessCount, soapErrorCount);
+
+                    Console.WriteLine($"\n=== RESUMEN DE PROCESAMIENTO ===");
+                    Console.WriteLine($"Total de tanques: {result.Tanks.Count}");
+                    Console.WriteLine($"BD Local - Exitosos: {successCount}, Errores: {errorCount}");
+                    Console.WriteLine($"Dagal SOAP - Exitosos: {soapSuccessCount}, Errores: {soapErrorCount}");
                 }
                 else
                 {
