@@ -1,0 +1,93 @@
+@page "/demo-info"
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize]
+
+<PageTitle>Demo Information</PageTitle>
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header bg-warning text-dark">
+                    <h3 class="card-title mb-0">
+                        <i class="fas fa-theater-masks me-2"></i>
+                        Información del Modo Demo
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info" role="alert">
+                        <h4 class="alert-heading">¡Modo Demostración Activado!</h4>
+                        <p>
+                            Esta aplicación está ejecutándose en modo demostración. Todos los datos son simulados y no requieren 
+                            conexiones a bases de datos reales ni servicios externos.
+                        </p>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h5>Características del Demo:</h5>
+                            <ul class="list-group list-group-flush">
+                                <li class="list-group-item">
+                                    <i class="fas fa-database text-primary me-2"></i>
+                                    Base de datos en memoria
+                                </li>
+                                <li class="list-group-item">
+                                    <i class="fas fa-usb text-success me-2"></i>
+                                    Puerto serial simulado
+                                </li>
+                                <li class="list-group-item">
+                                    <i class="fas fa-cloud text-info me-2"></i>
+                                    Servicio SOAP simulado
+                                </li>
+                                <li class="list-group-item">
+                                    <i class="fas fa-shield-alt text-warning me-2"></i>
+                                    Autenticación simplificada
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <h5>Datos de Prueba:</h5>
+                            <ul class="list-group list-group-flush">
+                                <li class="list-group-item">
+                                    <strong>Estación:</strong> 11162 - Estación Demo Gasolinera Central
+                                </li>
+                                <li class="list-group-item">
+                                    <strong>Tanques:</strong> 4 tanques con productos Magna, Premium y Diesel
+                                </li>
+                                <li class="list-group-item">
+                                    <strong>Inventarios:</strong> Datos simulados actualizados
+                                </li>
+                                <li class="list-group-item">
+                                    <strong>Descargas:</strong> Registros de ejemplo de los últimos días
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="mt-4">
+                        <h5>Cómo usar el Demo:</h5>
+                        <ol>
+                            <li>Navega por las diferentes secciones del sistema</li>
+                            <li>Los datos se cargan automáticamente desde listas en memoria</li>
+                            <li>Todas las funcionalidades están disponibles sin conexiones externas</li>
+                            <li>Los reportes y exportaciones funcionan con datos simulados</li>
+                        </ol>
+                    </div>
+
+                    <div class="mt-4">
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a href="/" class="btn btn-primary">
+                                <i class="fas fa-home me-2"></i>
+                                Ir al Dashboard
+                            </a>
+                            <a href="/recargas" class="btn btn-outline-secondary">
+                                <i class="fas fa-gas-pump me-2"></i>
+                                Ver Recargas
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
