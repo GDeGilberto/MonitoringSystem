@@ -1,22 +1,36 @@
 ﻿@using Domain.Constants
-
 @inject NavigationManager NavigationManager
+@inject IWebHostEnvironment Environment
 
 <div class="top-row ps-3 navbar navbar-dark">
     <div class="container-fluid">
-        <a class="navbar-brand" href="">Web</a>
+        <a class="navbar-brand" href="">
+            Web
+            @if (Environment.EnvironmentName == "Demo")
+            {
+                <span class="badge bg-warning text-dark ms-2">DEMO</span>
+            }
+        </a>
         @buttonClose
     </div>
 </div>
 
 <div>
+
     <nav class="flex-column">
 @*         <div class="nav-item px-3">
             <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
                 <i class="bi bi-house-fill m-2"></i>Home
             </NavLink>
         </div> *@
-
+        @if (Environment.EnvironmentName == "Demo")
+        {
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="demo-info">
+                    <i class="bi bi-info-circle-fill m-2 text-warning"></i>Info Demo
+                </NavLink>
+            </div>
+        }
         <AuthorizeView>
         @* <AuthorizeView Roles="@Roles.Admin"> *@
 
